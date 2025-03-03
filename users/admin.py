@@ -8,11 +8,11 @@ class CustomUserAdmin(UserAdmin):
     form=CustomUserChangeForm
     model=CustomUser
 
-    list_display=('email','username','red_team_precent','blue_team_precent')
+    list_display=('email','username','red_team_percent','blue_team_percent')
 
     fieldsets = (
         (None,{'fields':('username','email','password')}),
-        ("stats",{'fields':('red_team_precent','blue_team_precent')})
+        ("stats",{'fields':('red_team_percent','blue_team_percent')})
     )
 
     add_fieldsets = (

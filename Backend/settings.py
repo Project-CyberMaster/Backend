@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'users',
     'labs',
-    
+    'courses',
 ]
 
 
@@ -92,8 +92,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'something', # Palceholder
-        'USER': 'goose', # Palceholder
+        'NAME': 'dbp', # Palceholder
+        'USER': 'ps_user', # Palceholder
         'PASSWORD': '1234', # Palceholder
         'HOST':'127.0.0.1',
         'PORT': '',
