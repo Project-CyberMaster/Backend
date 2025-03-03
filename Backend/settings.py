@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'users',
     'labs',
     'courses',
+
+    'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
 ]
 
 

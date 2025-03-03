@@ -14,3 +14,4 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ["order_index"]
+        unique_together = ("course","order_index")
