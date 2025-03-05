@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer
+from rest_framework.permissions import IsAuthenticated
+from .models import *
+from .serializers import *
 
 User = get_user_model()
 
@@ -41,6 +43,27 @@ class LoginView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ProfileDetail(APIView):
+    permission_classes = [IsAuthenticated]  # Only authenticated users can access
+
+    def get_object(self, user):
+        try:
+            return Profile.objects.get(user=user)
+        except Profile.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, format=None):
+        profile = self.get_object(request.user)
+        serializer = ProfileSerializer(profile, context={'request': request})
+        return Response(serializer.data)
+
+    def put(self, request, format=None):
+        profile = self.get_object(request.user)
+        serializer = ProfileSerializer(profile, data=request.data, context={'request': request}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
 
     
 

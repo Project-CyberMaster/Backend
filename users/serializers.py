@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import *
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -46,3 +47,23 @@ class LoginSerializer(serializers.Serializer):
         data["user"] = user
         return data
 
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    profile_picture_url = serializers.SerializerMethodField()
+    rank = serializers.CharField(read_only=True)  
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'user', 'bio', 'profile_picture', 'profile_picture_url', 'points', 'rank']
+
+    def get_profile_picture_url(self, obj):
+        if obj.profile_picture:
+            return self.context['request'].build_absolute_uri(obj.profile_picture.url)
+        return None

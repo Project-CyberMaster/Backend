@@ -4,8 +4,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
 from .serializers import *
-
-
+from rest_framework.permissions import IsAuthenticated
 
 #categorie views
 
@@ -151,3 +150,26 @@ class LabResourceFileDetail(APIView):
         lab_file = self.get_object(pk)
         lab_file.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class SubmitFlag(APIView):
+    permission_classes = [IsAuthenticated]  
+
+    def post(self, request, lab_id, format=None):
+        try:
+            lab = Lab.objects.get(id=lab_id)
+        except Lab.DoesNotExist:
+            return Response({"error": "Lab not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        user_flag = request.data.get('flag', '')
+        if user_flag == lab.flag:
+            # Update user's points
+            profile = request.user.profile
+            profile.points += lab.points
+            profile.save()
+
+            return Response({"message": "Correct flag! Points added."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
