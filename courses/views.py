@@ -8,12 +8,16 @@ from .models import *
 from .serializers import *
 
 class CourseList(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get(self,request,format=None):
         course_list=Course.objects.all()
         serializer=CourseSerializer(course_list,many=True,context={'request':request})
         return Response(serializer.data)
     
 class GetCourse(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get_object(self, pk):
         try:
             return Course.objects.get(pk=pk)
@@ -26,6 +30,8 @@ class GetCourse(APIView):
         return Response(serializer.data)
     
 class LessonList(APIView):
+    permission_classes=[IsAuthenticated]
+
     def get_object(self, pk):
         try:
             return Course.objects.get(pk=pk)
@@ -39,6 +45,8 @@ class LessonList(APIView):
         return Response(serializer.data)
     
 class GetLesson(APIView):
+    permission_classes=[IsAuthenticated]
+    
     def get_object(self, pk):
         try:
             return Course.objects.get(pk=pk)
@@ -75,13 +83,20 @@ class CompleteLesson(generics.UpdateAPIView):
         return Enrollment.objects.filter(user=self.request.user)
 
     def perform_update(self, serializer):
+        index = self.kwargs['index']
         course = get_object_or_404(Course,pk=self.kwargs['pk'])
-        lesson = course.lessons.get(order_index=self.kwargs['index'])
+        lesson = get_object_or_404(course.lessons.all(),order_index=index)
+        lesson_count=course.lessons.count()
 
         serializer.instance.completed_lessons.add(lesson)
 
         serializer.instance.update_percentage()
 
+        if index>=lesson_count:
+            new_index=index
+        else:
+            new_index=index+1
+
         serializer.save(
-            current_lesson_index=serializer.instance.current_lesson_index+1
+            current_lesson_index=new_index
         )
