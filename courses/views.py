@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import generics
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import *
 
@@ -51,3 +53,35 @@ class GetLesson(APIView):
             raise Http404
         serializer=LessonSerializer(lesson,context={'request':request})
         return Response(serializer.data)
+    
+class Enroll(generics.CreateAPIView):
+    serializer_class=EnrollmentsSerializer
+    permission_classes=[IsAuthenticated]
+
+    def perform_create(self, serializer):
+        course = get_object_or_404(Course,pk=self.kwargs['pk'])
+        
+        serializer.save(
+            course = course,
+            user=self.request.user
+        )
+        return super().perform_create(serializer)
+    
+class CompleteLesson(generics.UpdateAPIView):
+    serializer_class=EnrollmentsSerializer
+    permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        return Enrollment.objects.filter(user=self.request.user)
+
+    def perform_update(self, serializer):
+        course = get_object_or_404(Course,pk=self.kwargs['pk'])
+        lesson = course.lessons.get(order_index=self.kwargs['index'])
+
+        serializer.instance.completed_lessons.add(lesson)
+
+        serializer.instance.update_percentage()
+
+        serializer.save(
+            current_lesson_index=serializer.instance.current_lesson_index+1
+        )

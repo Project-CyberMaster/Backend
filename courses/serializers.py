@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Course,Lesson
+from .models import *
 
 class LessonSerializer(serializers.ModelSerializer):
     link = serializers.SerializerMethodField()
@@ -40,8 +40,16 @@ class LessonSerializer(serializers.ModelSerializer):
         except Exception as e:
             return None
 
+class EnrollmentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Enrollment
+        fields=['course','user','current_lesson_index','completion_percentage']
+        read_only_fields = ['course','user','current_lesson_index','completion_percentage']
+
 class CourseSerializer(serializers.ModelSerializer):
     lessons=LessonSerializer(many=True,read_only=True)
     class Meta:
         model=Course
         fields=['id','title','description','lessons']
+
+

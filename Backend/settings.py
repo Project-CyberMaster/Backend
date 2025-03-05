@@ -94,7 +94,7 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dbp', # Palceholder
+        'NAME': 'dbp2', # Palceholder
         'USER': 'ps_user', # Palceholder
         'PASSWORD': '1234', # Palceholder
         'HOST':'127.0.0.1',
