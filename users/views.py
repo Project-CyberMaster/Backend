@@ -29,13 +29,13 @@ class LoginView(APIView):
 
         if serializer.is_valid():
             user = serializer.validated_data["user"]
-            tokens = RefreshToken(user)
+            tokens = RefreshToken.for_user(user)
 
             return Response(
                 {
                     "message": "Login successful",
-                    "access": tokens["access"],
-                    "refresh": tokens["refresh"],
+                    "access": str(tokens.access_token),
+                    "refresh": str(tokens),
                     
                 },
                 status=status.HTTP_200_OK

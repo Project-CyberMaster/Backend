@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import Http404
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
 from .serializers import *
@@ -31,7 +32,7 @@ class CategoryDetail(APIView):
         try:
             return Category.objects.get(pk=pk)
         except Category.DoesNotExist:
-            raise status.HTTP_404_NOT_FOUND
+            raise Http404
 
     def get(self, request, pk, format=None):
         category = self.get_object(pk)
@@ -79,7 +80,7 @@ class LabDetail(APIView):
         try:
             return Lab.objects.get(pk=pk)
         except Lab.DoesNotExist:
-            raise status.HTTP_404_NOT_FOUND
+            raise Http404
 
     def get(self, request, pk, format=None):
         lab = self.get_object(pk)
@@ -131,7 +132,7 @@ class LabResourceFileDetail(APIView):
         try:
             return LabResourceFile.objects.get(pk=pk)
         except LabResourceFile.DoesNotExist:
-            raise status.HTTP_404_NOT_FOUND
+            raise Http404
 
     def get(self, request, pk, format=None):
         lab_file = self.get_object(pk)

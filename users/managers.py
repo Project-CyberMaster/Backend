@@ -23,6 +23,8 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("user must have an email")
         
         email = self.normalize_email(email)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault('red_team_percent',0)
         extra_fields.setdefault('blue_team_percent',0)
 

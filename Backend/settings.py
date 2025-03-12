@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'users',
     'labs',
     'ranking',
-    
+    'courses',
+    'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
 ]
 
 
@@ -93,8 +94,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'something', # Palceholder
-        'USER': 'goose', # Palceholder
+        'NAME': 'dbp2', # Palceholder
+        'USER': 'ps_user', # Palceholder
         'PASSWORD': '1234', # Palceholder
         'HOST':'127.0.0.1',
         'PORT': '',

@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 
 
 class CustomUser(AbstractUser):
-    red_team_precent = models.PositiveIntegerField(default=0)
-    blue_team_precent = models.PositiveIntegerField(default=0)
+    red_team_percent = models.PositiveIntegerField(default=0)
+    blue_team_percent = models.PositiveIntegerField(default=0)
     objects=CustomUserManager()
 
     def __str__(self):
