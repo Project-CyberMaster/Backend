@@ -22,9 +22,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('users.urls')),
+    path('api/v1/users/',include('users.urls')),
     path('api/v1/labs/',include('labs.urls')),
-    path('',include('ranking.urls')),
+    path('api/v1/ranking/',include('ranking.urls')),
 
     path('api/v1/courses/',include('courses.urls')),
 
