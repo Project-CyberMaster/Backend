@@ -5,17 +5,26 @@ class Course(models.Model):
     title=models.CharField(max_length=255)
     description=models.TextField()
 
-
-class Lesson(models.Model):
+class Chapter(models.Model):
     title=models.CharField(max_length=255)
     description=models.TextField()
-    course=models.ForeignKey(Course,related_name="lessons",on_delete=models.CASCADE)
-    content=models.FileField(upload_to='lesson_content/', blank=True, null=True)
+    course=models.ForeignKey(Course,related_name="chapters",on_delete=models.CASCADE)
     order_index=models.IntegerField()
 
     class Meta:
         ordering = ["order_index"]
         unique_together = ("course","order_index")
+
+class Lesson(models.Model):
+    title=models.CharField(max_length=255)
+    description=models.TextField()
+    chapter=models.ForeignKey(Chapter,related_name="lessons",on_delete=models.CASCADE)
+    content=models.FileField(upload_to='lesson_content/', blank=True, null=True)
+    order_index=models.IntegerField()
+
+    class Meta:
+        ordering = ["order_index"]
+        unique_together = ("chapter","order_index")
 
 class Enrollment(models.Model):
     course=models.ForeignKey(Course,related_name="students",on_delete=models.CASCADE)
@@ -25,7 +34,7 @@ class Enrollment(models.Model):
     completion_percentage=models.PositiveIntegerField(default=0)
 
     def update_percentage(self):
-        lesson_count = self.course.lessons.count()
+        lesson_count = Lesson.objects.filter(chapter__course=self.course).count()
         completed_count = self.completed_lessons.count()
         
         if lesson_count > 0:

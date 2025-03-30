@@ -7,7 +7,7 @@ class LessonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Lesson
-        fields=['id','title','description','course','link','markdown','order_index']
+        fields=['id','title','description','chapter','link','markdown','order_index']
 
     def get_link(self,obj):
         if not obj.content:
@@ -46,10 +46,16 @@ class EnrollmentsSerializer(serializers.ModelSerializer):
         fields=['course','user','current_lesson_index','completion_percentage']
         read_only_fields = ['course','user','current_lesson_index','completion_percentage']
 
-class CourseSerializer(serializers.ModelSerializer):
+class ChapterSerializer(serializers.ModelSerializer):
     lessons=LessonSerializer(many=True,read_only=True)
     class Meta:
+        model=Chapter
+        fields=['id','title','description','course','order_index','lessons']
+
+class CourseSerializer(serializers.ModelSerializer):
+    chapters=ChapterSerializer(many=True,read_only=True)
+    class Meta:
         model=Course
-        fields=['id','title','description','lessons']
+        fields=['id','title','description','chapters']
 
 

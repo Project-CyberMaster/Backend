@@ -5,6 +5,7 @@ from django.http import Http404
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
 from .serializers import *
+from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 
 #categorie views
@@ -174,3 +175,13 @@ class SubmitFlag(APIView):
             return Response({"message": "Correct flag! Points added."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
+
+class Search(APIView):
+    def get(self,request):
+        query = request.GET.get('query',None)
+        if not query:
+            return Response({"error": "Query cannot be empty"}, status=400)
+        
+        results = Lab.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(author__icontains=query) | Q(category__name__icontains=query)).values("id","title","description","points","author","category__name")
+
+        return Response(results)
