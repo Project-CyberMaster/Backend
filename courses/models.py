@@ -3,6 +3,7 @@ from users.models import CustomUser
 
 class Course(models.Model):
     title=models.CharField(max_length=255)
+    thumbnail=models.FileField(upload_to='thumbnails/', blank=True, null=True)
     description=models.TextField()
 
 class Chapter(models.Model):
