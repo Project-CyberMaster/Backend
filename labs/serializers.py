@@ -14,19 +14,38 @@ class LabResourceFileSerializer(serializers.ModelSerializer):
         return None
 
 class LabSerializer(serializers.ModelSerializer):
-    files = LabResourceFileSerializer(many=True, read_only=True)  
+    # files = LabResourceFileSerializer(many=True, read_only=True)  
+    files = serializers.SerializerMethodField()
     category_name = serializers.CharField(source='category.name', read_only=True)  
 
     class Meta:
         model = Lab
         fields = [
             'id', 'title', 'description', 'points', 'author', 'category', 'category_name',
-            'connection_info', 'flag', 'difficulty', 'files'
+            'connection_info', 'difficulty', 'files'
         ]
 
-class CategorySerializer(serializers.ModelSerializer):
-    labs = LabSerializer(many=True, read_only=True)  # Nested labs
+    def get_files(self,obj):
+        request=self.context.get('request')
+        expand=request.query_params.get('expand','').split(',')
 
+        if 'files' in expand:
+            return LabResourceFileSerializer(obj.files.all(),many=True,context={'request':request}).data
+        
+        return list(obj.files.values_list('id',flat=True))
+
+class CategorySerializer(serializers.ModelSerializer):
+    labs = serializers.SerializerMethodField()
+    
     class Meta:
         model = Category
         fields = ['id', 'name', 'description', 'category_type', 'labs']
+
+    def get_labs(self,obj):
+        request = self.context.get('request')
+        expand = request.query_params.get('expand','').split(',')
+
+        if 'labs' in expand:
+            return LabSerializer(obj.labs.all(),many=True, read_only=True,context={'request':request}).data
+        else:
+            return list(obj.labs.values_list('id',flat=True))
