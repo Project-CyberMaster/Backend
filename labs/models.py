@@ -22,7 +22,6 @@ class Lab(models.Model):
     author = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name='labs', on_delete=models.CASCADE)
 
-   
     connection_info = models.TextField(blank=True, null=True)  
     flag = models.CharField(max_length=255, blank=True, null=True) 
     difficulty = models.CharField(max_length=50, choices=DIFFICULTY_CHOICES, default='easy') 
@@ -37,4 +36,4 @@ class LabResourceFile(models.Model):
      
 
     def __str__(self):
-        return self.file
+        return self.file.name

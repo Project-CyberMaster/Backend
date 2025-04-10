@@ -9,14 +9,14 @@ from .models import *
 from .serializers import *
 
 class CourseList(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
 
     def get(self,request):
-        course_list=Course.objects.values("id","title","description")
-        return Response(list(course_list))
+        course_list=Course.objects.all()
+        return Response(CourseSerializer(course_list,many=True,context={'request':request}).data)
     
 class GetCourse(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
         
     def get(self,request,pk):
         course=get_object_or_404(Course,pk=pk)
@@ -24,15 +24,15 @@ class GetCourse(APIView):
         return Response(serializer.data)
     
 class ChapterList(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
         
     def get(self,request,pk):
         course=get_object_or_404(Course,pk=pk)
-        chapters=course.chapters.values("id","title","description")
-        return Response(list(chapters))
+        chapters=course.chapters.all()
+        return Response(ChapterSerializer(chapters,many=True,context={'request':request}).data)
 
 class GetChapter(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
     
     def get(self,request,pk,index):
         course=get_object_or_404(Course,pk=pk)
@@ -44,7 +44,7 @@ class GetChapter(APIView):
         return Response(serializer.data)
     
 class LessonList(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
         
     def get(self,request,pk,index):
         course=get_object_or_404(Course,pk=pk)
@@ -52,11 +52,11 @@ class LessonList(APIView):
             chapter=course.chapters.get(order_index=index)
         except:
             raise Http404
-        lessons=chapter.lessons.values("id","title","description")
-        return Response(list(lessons))
+        lessons=chapter.lessons.all()
+        return Response(LessonSerializer(lessons,many=True,context={'request':request}).data)
     
 class GetLesson(APIView):
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
     
     def get(self,request,pk,index,lessonindex):
         course=get_object_or_404(Course,pk=pk)
@@ -75,7 +75,7 @@ class GetLesson(APIView):
     
 class Enroll(generics.CreateAPIView):
     serializer_class=EnrollmentsSerializer
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
 
     def perform_create(self, serializer):
         course = get_object_or_404(Course,pk=self.kwargs['pk'])
@@ -88,7 +88,7 @@ class Enroll(generics.CreateAPIView):
     
 class CompleteLesson(generics.UpdateAPIView):
     serializer_class=EnrollmentsSerializer
-    permission_classes=[IsAuthenticated]
+    # permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
         return Enrollment.objects.filter(user=self.request.user)
