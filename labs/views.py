@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.postgres.aggregates import ArrayAgg
 
 #categorie views
-class CategoryListCreate(APIView):
+class CategoryList(APIView):
     def get(self, request, format=None):
         name = request.query_params.get('name', None)  
         categories = Category.objects.all()
@@ -29,7 +29,7 @@ class CategoryDetail(APIView):
         return Response(serializer.data)
     
 #lab views
-class LabListCreate(APIView):
+class LabList(APIView):
     def get(self, request, format=None):
         difficulty = request.query_params.get('difficulty', None) 
         labs = Lab.objects.all()
@@ -47,7 +47,7 @@ class LabDetail(APIView):
         return Response(serializer.data)
 
 #labresources views
-class LabResourceFileListCreate(APIView):
+class LabResourceFileList(APIView):
     parser_classes = [MultiPartParser, FormParser]  # Allow file uploads
 
     def get(self, request, lab_id, format=None):
