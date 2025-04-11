@@ -21,6 +21,7 @@ class Lab(models.Model):
     points = models.IntegerField()
     author = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name='labs', on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, related_name='labs', on_delete=models.CASCADE)
 
     connection_info = models.TextField(blank=True, null=True)  
     flag = models.CharField(max_length=255, blank=True, null=True) 

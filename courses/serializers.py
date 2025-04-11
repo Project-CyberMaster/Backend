@@ -78,10 +78,11 @@ class ChapterSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     chapters=serializers.SerializerMethodField()
     thumbnail=serializers.SerializerMethodField()
+    category_name=serializers.SerializerMethodField()
 
     class Meta:
         model=Course
-        fields=['id','title','description','thumbnail','chapters']
+        fields=['id','title','description','thumbnail','category','category_name','chapters']
 
     def get_chapters(self,obj):
         request=self.context.get('request')
@@ -95,4 +96,7 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
         if obj.thumbnail:
             return self.context['request'].build_absolute_uri(obj.thumbnail.url)
+        
+    def get_category_name(self,obj):
+        return obj.category.name
 

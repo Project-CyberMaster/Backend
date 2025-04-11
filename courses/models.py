@@ -1,10 +1,12 @@
 from django.db import models
 from users.models import CustomUser
+from labs.models import Category
 
 class Course(models.Model):
     title=models.CharField(max_length=255)
     thumbnail=models.FileField(upload_to='thumbnails/', blank=True, null=True)
     description=models.TextField()
+    category=models.ForeignKey(Category,related_name='courses',on_delete=models.CASCADE)
 
 class Chapter(models.Model):
     title=models.CharField(max_length=255)

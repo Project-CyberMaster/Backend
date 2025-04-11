@@ -120,7 +120,7 @@ class Search(APIView):
         if not query:
             return Response({"error": "Query cannot be empty"}, status=400)
         
-        course_results = Course.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
+        course_results = Course.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(category__name__icontains=query) ).values("id","title","description","category","category__name")
         chapter_results = Chapter.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
         lesson_results = Lesson.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
         
