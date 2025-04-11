@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'labs',
     'ranking',
     'courses',
+    'categories',
     'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
 ]
 

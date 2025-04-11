@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import *
+from labs.serializers import LabSerializer
 
 class LessonSerializer(serializers.ModelSerializer):
     link = serializers.SerializerMethodField()
     markdown = serializers.SerializerMethodField()
+    labs = serializers.SerializerMethodField()
 
     class Meta:
         model=Lesson
-        fields=['id','title','description','chapter','link','markdown','order_index']
+        fields=['id','title','description','chapter','link','markdown','order_index','labs']
     
     def get_fields(self):
         request=self.context.get('request')
@@ -52,6 +54,15 @@ class LessonSerializer(serializers.ModelSerializer):
             return None
         except Exception as e:
             return None
+    
+    def get_labs(self,obj):
+        request=self.context.get('request')
+        expand=request.query_params.get('expand','').split(',')
+
+        if 'labs' in expand:
+            return LabSerializer(obj.labs.all(),many=True,read_only=True,context={'request':request}).data
+        
+        return list(obj.labs.values_list('id',flat=True))
 
 class EnrollmentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -82,7 +93,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Course
-        fields=['id','title','description','thumbnail','category','category_name','chapters']
+        fields=['id','title','description','thumbnail','author','author_photo','author_role','category','category_name','chapters']
 
     def get_chapters(self,obj):
         request=self.context.get('request')

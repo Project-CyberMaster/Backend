@@ -8,25 +8,6 @@ from .serializers import *
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.contrib.postgres.aggregates import ArrayAgg
-
-#categorie views
-class CategoryListCreate(APIView):
-    def get(self, request, format=None):
-        name = request.query_params.get('name', None)  
-        categories = Category.objects.all()
-
-        if name:
-            categories = categories.filter(name__icontains=name)  
-            
-        serializer = CategorySerializer(categories, many=True, context={'request': request})
-        return Response(serializer.data)
-
-class CategoryDetail(APIView):
-    def get(self, request, pk, format=None):
-        category = get_object_or_404(Category,pk=pk)
-        serializer = CategorySerializer(category, context={'request': request})
-        return Response(serializer.data)
     
 #lab views
 class LabListCreate(APIView):
