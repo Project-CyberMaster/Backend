@@ -37,3 +37,18 @@ class LabResourceFile(models.Model):
 
     def __str__(self):
         return self.file.name
+    
+
+from django.conf import settings
+
+class SolvedLab(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
+    solved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lab')  # avoid duplicates
+
+    def __str__(self):
+        return f"{self.user.username} - {self.lab.title}"
+

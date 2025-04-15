@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/v1/labs/',include('labs.urls')),
     path('api/v1/ranking/',include('ranking.urls')),
     path('api/v1/courses/',include('courses.urls')),
+    path('api/v1/contact/',include('contact.urls')),
+    path('api/',include('chat.urls')),
 
     # Swagger stuff for docs (TODO: comment out in prod)
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),

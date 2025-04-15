@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'labs',
     'ranking',
     'courses',
+    'contact',
+    'chat',
     'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
 ]
 
@@ -93,12 +95,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dbp2', # Palceholder
-        'USER': 'ps_user', # Palceholder
-        'PASSWORD': '1234', # Palceholder
-        'HOST':'127.0.0.1',
-        'PORT': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -148,3 +146,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+GOOGLE_API_KEY = 'AIzaSyB-TzEi633vh6CQy73MRi-_LS4v7mjoYVc'

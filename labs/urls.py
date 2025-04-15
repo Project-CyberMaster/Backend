@@ -12,4 +12,6 @@ urlpatterns = [
    
     path('<int:lab_id>/files', LabResourceFileList.as_view(), name='lab-file-list-create'),
     path('files/<int:pk>/', LabResourceFileDetail.as_view(), name='lab-file-detail'),
+    path('progress/', SolveProgress.as_view(), name='solve-progress'),
+
 ]
