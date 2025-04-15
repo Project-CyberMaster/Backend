@@ -36,19 +36,19 @@ class GeminiAssistantAPI(APIView):
         if not conversation:
             conversation = Conversation.objects.create(user=request.user, is_active=True)
         
-        # Save user message
+       
         Message.objects.create(
             conversation=conversation,
             content=user_message,
             is_user=True
         )
         
-        # Get last 3 messages for context (excluding current message)
+        # Get last 3 messages 
         last_messages = Message.objects.filter(
             conversation=conversation
         ).exclude(content=user_message).order_by('-created_at')[:3]
         
-        # Prepare chat history in Gemini format
+        
         chat_history = []
         for msg in reversed(last_messages):
             role = "user" if msg.is_user else "model"
@@ -57,7 +57,7 @@ class GeminiAssistantAPI(APIView):
                 "parts": [msg.content]
             })
         
-        # Get response from Gemini
+       
         bot_response = generate_with_gemini(
             prompt=user_message,
             max_tokens=max_tokens,
@@ -79,7 +79,7 @@ class ResetConversationAPI(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
-        # Delete all messages and conversations for the user
+        
         conversations = Conversation.objects.filter(user=request.user, is_active=True)
         
         # First delete all messages in these conversations
