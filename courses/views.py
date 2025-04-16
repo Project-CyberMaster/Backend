@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -75,7 +76,7 @@ class GetLesson(APIView):
     
 class Enroll(generics.CreateAPIView):
     serializer_class=EnrollmentsSerializer
-    # permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated]
 
     def perform_create(self, serializer):
         course = get_object_or_404(Course,pk=self.kwargs['pk'])
@@ -88,39 +89,51 @@ class Enroll(generics.CreateAPIView):
     
 class CompleteLesson(generics.UpdateAPIView):
     serializer_class=EnrollmentsSerializer
-    # permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated]
 
     def get_queryset(self):
-        return Enrollment.objects.filter(user=self.request.user)
+        return Enrollment.objects.filter(user=self.request.user,course__pk=self.kwargs['pk'])
+    
+    def get_object(self):
+        queryset=self.get_queryset()
+        return get_object_or_404(queryset)
 
     def perform_update(self, serializer):
         index = self.kwargs['index']
-        lesson_index = self.kwargs['lesson_index']
+        lesson_index = self.kwargs['lessonindex']
         course = get_object_or_404(Course,pk=self.kwargs['pk'])
         chapter = get_object_or_404(course.chapters.all(),order_index=index)
         lesson = get_object_or_404(chapter.lessons.all(),order_index=lesson_index)
         lesson_count=chapter.lessons.count()
 
+        if lesson in serializer.instance.completed_lessons.all():
+            return
+        
         serializer.instance.completed_lessons.add(lesson)
 
         serializer.instance.update_percentage()
-
-        if index>=lesson_count:
+        if serializer.instance.completion_percentage == 100.0:
+            cert_ready=True
+        else:
+            cert_ready=False
+        
+        if lesson_index>=lesson_count:
             new_index=index
         else:
             new_index=index+1
 
         serializer.save(
-            current_lesson_index=new_index
+            current_lesson_index=new_index,
+            cert_ready=cert_ready
         )
-
+    
 class Search(APIView):
     def get(self,request):
         query = request.GET.get('query',None)
         if not query:
             return Response({"error": "Query cannot be empty"}, status=400)
         
-        course_results = Course.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
+        course_results = Course.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(category__name__icontains=query) ).values("id","title","description","category","category__name")
         chapter_results = Chapter.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
         lesson_results = Lesson.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) ).values("id","title","description")
         

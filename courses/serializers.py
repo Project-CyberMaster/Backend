@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import *
+from labs.serializers import LabSerializer
 
 class LessonSerializer(serializers.ModelSerializer):
     link = serializers.SerializerMethodField()
     markdown = serializers.SerializerMethodField()
+    labs = serializers.SerializerMethodField()
 
     class Meta:
         model=Lesson
-        fields=['id','title','description','chapter','link','markdown','order_index']
+        fields=['id','title','description','chapter','link','markdown','order_index','labs']
     
     def get_fields(self):
         request=self.context.get('request')
@@ -52,12 +54,21 @@ class LessonSerializer(serializers.ModelSerializer):
             return None
         except Exception as e:
             return None
+    
+    def get_labs(self,obj):
+        request=self.context.get('request')
+        expand=request.query_params.get('expand','').split(',')
+
+        if 'labs' in expand:
+            return LabSerializer(obj.labs.all(),many=True,read_only=True,context={'request':request}).data
+        
+        return list(obj.labs.values_list('id',flat=True))
 
 class EnrollmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Enrollment
-        fields=['course','user','current_lesson_index','completion_percentage']
-        read_only_fields = ['course','user','current_lesson_index','completion_percentage']
+        fields=['course','user','current_lesson_index','cert_ready','completion_percentage']
+        read_only_fields = ['course','user','current_lesson_index','cert_ready','completion_percentage']
 
 class ChapterSerializer(serializers.ModelSerializer):
     lessons=serializers.SerializerMethodField()
@@ -78,10 +89,11 @@ class ChapterSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     chapters=serializers.SerializerMethodField()
     thumbnail=serializers.SerializerMethodField()
+    category_name=serializers.SerializerMethodField()
 
     class Meta:
         model=Course
-        fields=['id','title','description','thumbnail','chapters']
+        fields=['id','title','description','thumbnail','author','author_photo','author_role','category','category_name','chapters']
 
     def get_chapters(self,obj):
         request=self.context.get('request')
@@ -95,4 +107,7 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
         if obj.thumbnail:
             return self.context['request'].build_absolute_uri(obj.thumbnail.url)
+        
+    def get_category_name(self,obj):
+        return obj.category.name
 
