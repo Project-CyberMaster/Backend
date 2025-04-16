@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/v1/labs/',include('labs.urls')),
     path('api/v1/ranking/',include('ranking.urls')),
     path('api/v1/courses/',include('courses.urls')),
+    path('api/v1/certify/',include('certs.urls')),
     path('api/v1/category/',include('categories.urls')),
 
     # Swagger stuff for docs (TODO: comment out in prod)

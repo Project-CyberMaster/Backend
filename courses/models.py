@@ -47,6 +47,7 @@ class Enrollment(models.Model):
     current_lesson_index=models.PositiveIntegerField(default=1)
     completed_lessons=models.ManyToManyField(Lesson,related_name='completed_lessons')
     completion_percentage=models.PositiveIntegerField(default=0)
+    cert_ready=models.BooleanField(default=False)
 
     def update_percentage(self):
         lesson_count = Lesson.objects.filter(chapter__course=self.course).count()

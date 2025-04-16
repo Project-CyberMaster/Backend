@@ -1,5 +1,5 @@
 # Build Stage
-FROM python:3.13-slim-alpine AS builder
+FROM python:3.13-slim AS builder
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
@@ -10,7 +10,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Production Stage
-FROM python:3.13-slim-alpine
+FROM python:3.13-slim
 RUN useradd -m -r appuser && \
     mkdir /app && \
     chown -R appuser /app

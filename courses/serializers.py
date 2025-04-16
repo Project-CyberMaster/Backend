@@ -67,8 +67,8 @@ class LessonSerializer(serializers.ModelSerializer):
 class EnrollmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Enrollment
-        fields=['course','user','current_lesson_index','completion_percentage']
-        read_only_fields = ['course','user','current_lesson_index','completion_percentage']
+        fields=['course','user','current_lesson_index','cert_ready','completion_percentage']
+        read_only_fields = ['course','user','current_lesson_index','cert_ready','completion_percentage']
 
 class ChapterSerializer(serializers.ModelSerializer):
     lessons=serializers.SerializerMethodField()
