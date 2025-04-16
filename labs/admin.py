@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Category)
 admin.site.register(Lab)
 admin.site.register(LabResourceFile)
+admin.site.register(SolvedLab)

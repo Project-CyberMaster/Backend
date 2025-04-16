@@ -8,9 +8,11 @@ from .serializers import *
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.contrib.postgres.aggregates import ArrayAgg
+from .utils.percentage import calculate_solve_percentages
     
 #lab views
-class LabListCreate(APIView):
+class LabList(APIView):
     def get(self, request, format=None):
         difficulty = request.query_params.get('difficulty', None) 
         labs = Lab.objects.all()
@@ -28,7 +30,7 @@ class LabDetail(APIView):
         return Response(serializer.data)
 
 #labresources views
-class LabResourceFileListCreate(APIView):
+class LabResourceFileList(APIView):
     parser_classes = [MultiPartParser, FormParser]  # Allow file uploads
 
     def get(self, request, lab_id, format=None):
@@ -58,9 +60,21 @@ class SubmitFlag(APIView):
             profile.points += lab.points
             profile.save()
 
+            # Save solved lab
+            SolvedLab.objects.get_or_create(user=request.user, lab=lab)
+
             return Response({"message": "Correct flag! Points added."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class SolveProgress(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        progress = calculate_solve_percentages(request.user)
+        return Response(progress, status=200)
+
 
 class Search(APIView):
     def get(self,request):
@@ -71,3 +85,4 @@ class Search(APIView):
         results = Lab.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(author__icontains=query) | Q(category__name__icontains=query)).values("id","title","description","points","author","category__name")
 
         return Response(results)
+    

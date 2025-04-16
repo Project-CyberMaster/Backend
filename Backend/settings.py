@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'labs',
     'ranking',
     'courses',
+    'contact',
+    'chat',
     'categories',
     'certs',
     'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
@@ -160,6 +162,7 @@ STATICFILES_DIRS=[
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+GOOGLE_API_KEY = 'AIzaSyB-TzEi633vh6CQy73MRi-_LS4v7mjoYVc'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME':timedelta(minutes=90)
 }

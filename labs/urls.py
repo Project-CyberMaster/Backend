@@ -6,6 +6,8 @@ urlpatterns = [
     path('<int:pk>', LabDetail.as_view(), name='lab-detail'),
     path('search', Search.as_view(), name='lab-search'),
    
-    path('<int:lab_id>/files', LabResourceFileListCreate.as_view(), name='lab-file-list-create'),
+    path('<int:lab_id>/files', LabResourceFileList.as_view(), name='lab-file-list-create'),
     path('files/<int:pk>/', LabResourceFileDetail.as_view(), name='lab-file-detail'),
+    path('progress/', SolveProgress.as_view(), name='solve-progress'),
+
 ]

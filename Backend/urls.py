@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/v1/labs/',include('labs.urls')),
     path('api/v1/ranking/',include('ranking.urls')),
     path('api/v1/courses/',include('courses.urls')),
+    path('api/v1/contact/',include('contact.urls')),
+    path('api/v1/chat/',include('chat.urls')),
     path('api/v1/certify/',include('certs.urls')),
     path('api/v1/category/',include('categories.urls')),
 
