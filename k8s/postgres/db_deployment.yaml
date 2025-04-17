@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: cybermaster_postgres
+  name: cybermaster_postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cybermaster_postgres
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: cybermaster_postgres
+    spec:
+      containers:
+      - image: postgres
+        name: postgres
+        ports: 
+          - containerPort: 5432
+        envFrom:
+          - configMapRef:
+              name: postgres-config
+          - secretRef:
+              name: postgres-secret
+        volumeMounts:
+          - name: postgres-storage
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        resources: {}
+status: {}

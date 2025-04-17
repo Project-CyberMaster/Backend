@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: cybermaster-backend
+  name: cybermaster-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cybermaster-backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: cybermaster-backend
+    spec:
+      containers:
+      - image: https://hub.docker.com/r/1nitramfs/cybermaster-backend:latest
+        name: cybermaster-backend
+        resources: {}
+status: {}
