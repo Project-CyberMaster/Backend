@@ -18,7 +18,9 @@ spec:
         app: cybermaster-backend
     spec:
       containers:
-      - image: https://hub.docker.com/r/1nitramfs/cybermaster-backend:latest
+      - image: 1nitramfs/cybermaster-backend:latest
         name: cybermaster-backend
         resources: {}
+      imagePullSecrets:
+      - name: pull-secret
 status: {}

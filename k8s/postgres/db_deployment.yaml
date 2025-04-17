@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: cybermaster_postgres
-  name: cybermaster_postgres
+    app: cybermaster-postgres
+  name: cybermaster-postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cybermaster_postgres
+      app: cybermaster-postgres
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: cybermaster_postgres
+        app: cybermaster-postgres
     spec:
       containers:
       - image: postgres
@@ -30,9 +30,9 @@ spec:
         volumeMounts:
           - name: postgres-storage
             mountPath: /var/lib/postgresql/data
+        resources: {}
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
-        resources: {}
 status: {}

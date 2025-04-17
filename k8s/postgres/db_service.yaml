@@ -3,8 +3,8 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: cybermaster_postgres
-  name: cybermaster_postgres
+    app: cybermaster-postgres
+  name: cybermaster-postgres
 spec:
   ports:
   - name: 5432-5432
@@ -12,7 +12,7 @@ spec:
     protocol: TCP
     targetPort: 5432
   selector:
-    app: cybermaster_postgres
+    app: cybermaster-postgres
   type: ClusterIP
 status:
   loadBalancer: {}

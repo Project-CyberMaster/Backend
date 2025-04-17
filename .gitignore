@@ -130,6 +130,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.secret
 .venv
 env/
 venv/
@@ -137,6 +138,9 @@ ENV/
 env.bak/
 venv.bak/
 .vscode/
+k8s/config/postgres-configmap.yaml
+k8s/config/postgres-secret.yaml
+k8s/config/pull-secret.yaml
 
 # Spyder project settings
 .spyderproject
