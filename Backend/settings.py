@@ -99,8 +99,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME','dbp2'),
-        'USER': os.environ.get('DB_USER','ps_user'),
+        'NAME': os.environ.get('DB_NAME','cybermaster-backend-db'),
+        'USER': os.environ.get('DB_USER','dbuser'),
         'PASSWORD': os.environ.get('DB_PASSWORD','1234'),
         'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
         'PORT': os.environ.get('DB_PORT','5432'),
