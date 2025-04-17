@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Lab, LabResourceFile
+from .models import *
 
 class LabResourceFileSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()  
@@ -34,18 +34,17 @@ class LabSerializer(serializers.ModelSerializer):
         
         return list(obj.files.values_list('id',flat=True))
 
-class CategorySerializer(serializers.ModelSerializer):
-    labs = serializers.SerializerMethodField()
-    
+class SolvedLabSerializer(serializers.ModelSerializer):
+    lab_title = serializers.CharField(source='lab.title', read_only=True)
+    solved_on = serializers.DateTimeField(read_only=True)
+
     class Meta:
-        model = Category
-        fields = ['id', 'name', 'description', 'category_type', 'labs']
+        model = SolvedLab
+        fields = ['id', 'user', 'lab_title', 'solved_on']
 
-    def get_labs(self,obj):
-        request = self.context.get('request')
-        expand = request.query_params.get('expand','').split(',')
 
-        if 'labs' in expand:
-            return LabSerializer(obj.labs.all(),many=True, read_only=True,context={'request':request}).data
-        else:
-            return list(obj.labs.values_list('id',flat=True))
+
+class BadgeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Badge
+        fields = ['id', 'user', 'badge_name', 'earned_on']

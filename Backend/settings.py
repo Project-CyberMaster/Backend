@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,8 +51,21 @@ INSTALLED_APPS = [
     'chat',
     'categories',
     'certs',
-    'drf_yasg', # Swagger stuff for docs (TODO: comment out later)
+    'drf_yasg',
+    'django_rest_passwordreset', # Swagger stuff for docs (TODO: comment out later)
 ]
+
+
+JAZZMIN_SETTINGS = {
+    "site_title": "CyberMaster Admin",
+    "site_header": "CyberMaster Panel",
+    "site_brand": "CyberMaster",
+    "welcome_sign": "Welcome to the CyberMaster Admin Panel",
+    "copyright": "CyberMaster",
+    
+       "user_avatar": None,  
+
+}
 
 
 REST_FRAMEWORK = {
@@ -98,12 +112,8 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME','dbp2'),
-        'USER': os.environ.get('DB_USER','ps_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD','1234'),
-        'HOST':os.environ.get('DB_HOST','127.0.0.1'),
-        'PORT': os.environ.get('DB_PORT','5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -166,3 +176,14 @@ GOOGLE_API_KEY = 'AIzaSyB-TzEi633vh6CQy73MRi-_LS4v7mjoYVc'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME':timedelta(minutes=90)
 }
+
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "moncefzabat37@gmail.com"
+EMAIL_HOST_PASSWORD = "nqqb uqfq zwgu royi"  
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

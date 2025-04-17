@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
@@ -46,6 +47,18 @@ class LoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+    
+# for swagger documenation
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    
+
+# for swagger documenation
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField()
+    new_password = serializers.CharField()
 
 
 
@@ -54,16 +67,19 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
+
+
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = serializers.StringRelatedField()  # Just to include the username or user-related info
     profile_picture_url = serializers.SerializerMethodField()
-    rank = serializers.CharField(read_only=True)  
+    rank = serializers.CharField(read_only=True)
 
     class Meta:
         model = Profile
-        fields = ['id', 'user', 'bio', 'profile_picture', 'profile_picture_url', 'points', 'rank']
+        fields = ['id', 'user', 'bio', 'profile_picture', 'profile_picture_url', 'points', 'rank', 'github', 'linkedin', 'twitter', 'facebook', 'full_name', 'location']
 
     def get_profile_picture_url(self, obj):
         if obj.profile_picture:
             return self.context['request'].build_absolute_uri(obj.profile_picture.url)
         return None
+
