@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import *
 
-# Register your models here
-admin.site.register(Category)
+
 admin.site.register(Lab)
 admin.site.register(LabResourceFile)
 admin.site.register(SolvedLab)
+admin.site.register(Badge)

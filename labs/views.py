@@ -3,11 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
+from users.models import *
 from .serializers import *
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .utils.percentage import calculate_solve_percentages
+
+
+
     
 #lab views
 class LabList(APIView):
@@ -43,7 +47,7 @@ class LabResourceFileDetail(APIView):
         return Response(serializer.data)
 
 class SubmitFlag(APIView):
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, lab_id, format=None):
         try:
@@ -52,26 +56,98 @@ class SubmitFlag(APIView):
             return Response({"error": "Lab not found"}, status=status.HTTP_404_NOT_FOUND)
 
         user_flag = request.data.get('flag', '')
-        if user_flag == lab.flag:
-            # Update user's points
-            profile = request.user.profile
+        if user_flag != lab.flag:
+            return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ensure profile exists (create if not)
+        profile, _ = Profile.objects.get_or_create(user=request.user, defaults={'points': 0})
+
+        # Check if lab was already solved
+        solved_lab, created = SolvedLab.objects.get_or_create(user=request.user, lab=lab)
+
+        if created:
+            # Only award points and check for badge if it's solved for the first time
             profile.points += lab.points
             profile.save()
 
-            # Save solved lab
-            SolvedLab.objects.get_or_create(user=request.user, lab=lab)
+            # Count how many labs in this category the user has solved
+            labs_solved_in_category = SolvedLab.objects.filter(user=request.user, lab__category=lab.category).count()
 
-            return Response({"message": "Correct flag! Points added."}, status=status.HTTP_200_OK)
+            # Award badge if 2 labs solved in same category
+            badge_created = False
+            badge_name = f"{lab.category.name}"
+
+            if labs_solved_in_category == 2 and not Badge.objects.filter(user=request.user, badge_name=badge_name).exists():
+                Badge.objects.create(user=request.user, badge_name=badge_name)
+                badge_created = True
         else:
-            return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
-        
+            # Lab was already solved
+            badge_created = False
+            badge_name = None
+            labs_solved_in_category = SolvedLab.objects.filter(user=request.user, lab__category=lab.category).count()
 
+        # general percentage
+
+        progress = calculate_solve_percentages(request.user)
+        request.user.red_team_percent = progress['offensive_percent']
+        request.user.blue_team_percent = progress['defensive_percent']
+        request.user.save()
+
+        # Percentage solved in this category
+        total_labs_in_category = Lab.objects.filter(category=lab.category).count()
+        percentage_solved = (labs_solved_in_category / total_labs_in_category) * 100 if total_labs_in_category else 0
+
+        # Most recently solved lab
+        last_solved_lab = SolvedLab.objects.filter(user=request.user).order_by('-solved_on').first()
+
+        return Response({
+            "message": "Correct flag! Points added." if created else "Flag already submitted before.",
+            "percentage_solved": percentage_solved,
+            "last_solved_lab": {
+                "lab_id": last_solved_lab.lab.id,
+                "title": last_solved_lab.lab.title,
+                "solved_on": last_solved_lab.solved_on
+            },
+            "badge_earned": badge_created,
+            "badge_name": badge_name if badge_created else None
+        }, status=status.HTTP_200_OK)
+
+        
 class SolveProgress(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        progress = calculate_solve_percentages(request.user)
+        user = request.user
+        
+        progress = calculate_solve_percentages(user)
         return Response(progress, status=200)
+
+    
+class SolvedLabList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        solved_labs = SolvedLab.objects.filter(user=request.user)
+        serializer = SolvedLabSerializer(solved_labs, many=True)
+        return Response(serializer.data)
+
+
+
+
+
+    
+
+class BadgeList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        badges = Badge.objects.filter(user=request.user)
+        serializer = BadgeSerializer(badges, many=True)
+        return Response(serializer.data)
+    
+
+
+        
 
 
 class Search(APIView):
