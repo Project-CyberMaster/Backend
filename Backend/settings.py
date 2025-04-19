@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure--+c=i-ze%)vtj&-+9i+2$8*gguo8c($c-+@42xqxxf1r+a3_c8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -78,6 +78,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -112,8 +113,12 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME','cybermaster-backend-db'),
+        'USER': os.environ.get('DB_USER','dbuser'),
+        'PASSWORD': os.environ.get('DB_PASSWORD','1234'),
+        'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
+        'PORT': os.environ.get('DB_PORT','5432'),
     }
 }
 

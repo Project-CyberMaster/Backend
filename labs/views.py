@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.http import Http404
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
 from users.models import *
@@ -9,7 +8,6 @@ from .serializers import *
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from django.contrib.postgres.aggregates import ArrayAgg
 from .utils.percentage import calculate_solve_percentages
 
 
