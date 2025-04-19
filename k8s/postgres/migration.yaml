@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migration
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: postgres:17-alpine
+        command: ["sh","-c","until pg_isready -h cybermaster-postgres -p 5432; do echo 'Waiting for database to be ready...'; sleep 2; done;"]
+      containers:
+      - name: migration
+        image: 1nitramfs/cybermaster-backend:latest
+        command: ["/bin/sh","-c"]
+        args:
+          - |
+            cd /app && \
+            python3 manage.py makemigrations && \
+            python3 manage.py migrate
+      imagePullSecrets:
+      - name: pull-secret
+      restartPolicy: Never

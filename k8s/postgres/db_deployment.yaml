@@ -18,7 +18,7 @@ spec:
         app: cybermaster-postgres
     spec:
       containers:
-      - image: postgres
+      - image: postgres:17-alpine
         name: postgres
         ports: 
           - containerPort: 5432
