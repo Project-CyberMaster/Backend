@@ -21,7 +21,7 @@ class LabSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lab
         fields = [
-            'id', 'title', 'description', 'points','lesson', 'author', 'category', 'category_name',
+            'id', 'is_machine','title', 'description', 'points','lesson', 'author', 'category', 'category_name',
             'connection_info', 'difficulty', 'files'
         ]
 
@@ -46,13 +46,3 @@ class BadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
         fields = ['id', 'user', 'badge_name', 'earned_on']
-
-class MachineSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='category.name', read_only=True)  
-
-    class Meta:
-        model = Machine
-        fields = [
-            'id', 'title', 'description', 'points','lesson', 'author', 'category', 'category_name',
-            'image', 'difficulty'
-        ]

@@ -11,6 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .utils.percentage import calculate_solve_percentages
 from kubernetes import client,config
+from kubernetes.client.rest import ApiException
+import hashlib
 
 config.load_incluster_config()
 v1=client.CoreV1Api()
@@ -151,51 +153,60 @@ class Search(APIView):
     
 class CreateMachine(APIView):
     def post(self,request,pk):
-        machine=get_object_or_404(Machine,pk=pk)
-        pod_name=str(machine.title)+str(request.user.username)
-
-        container=client.V1Container(
-            name=pod_name,
-            image=machine.image,
-            ports=[client.V1ContainerPort(container_port=8443)]
-        )
-
-        pod=client.V1Pod(
-            api_version="v1",
-            kind="Pod",
-            metadata=client.V1ObjectMeta(
+        machine=get_object_or_404(Lab,pk=pk)
+        pod_name=f"{machine.title}-{hashlib.md5(request.user.username).hexdigest()}"
+        try:
+            v1.read_namespaced_pod(name=pod_name,namespace='labs-pods')
+            node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
+            return Response({
+                'pod_name':pod_name,
+                'port':node_port,
+                'status':'running'
+            })
+        except ApiException as e:
+            container=client.V1Container(
                 name=pod_name,
-                labels={'app':pod_name}
-            ),
-            spec=client.V1PodSpec(
-                containers=[container]
+                image=machine.image,
+                ports=[client.V1ContainerPort(container_port=8443)]
             )
-        )
 
-        service=client.V1Service(
-            api_version="v1",
-            kind="Service",
-            metadata=client.V1ObjectMeta(
-                name=pod_name+'-service'
-            ),
-            spec=client.V1ServiceSpec(
-                selector={'app':pod_name},
-                ports=[
-                    client.V1ServicePort(
-                        port=8443,
-                        target_port=8443
-                    )
-                ],
-                type="NodePort"
+            pod=client.V1Pod(
+                api_version="v1",
+                kind="Pod",
+                metadata=client.V1ObjectMeta(
+                    name=pod_name,
+                    labels={'app':pod_name}
+                ),
+                spec=client.V1PodSpec(
+                    containers=[container]
+                )
             )
-        )
 
-        v1.create_namespaced_pod(namespace="lab-pods",body=pod)
-        v1.create_namespaced_service(namespace="lab-pods",body=service)
-        node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
-        return Response({
-            'pod_name':pod_name,
-            'port':node_port,
-            'status':'created'
-        })
+            service=client.V1Service(
+                api_version="v1",
+                kind="Service",
+                metadata=client.V1ObjectMeta(
+                    name=pod_name+'-service'
+                ),
+                spec=client.V1ServiceSpec(
+                    selector={'app':pod_name},
+                    ports=[
+                        client.V1ServicePort(
+                            port=8443,
+                            target_port=8443
+                        )
+                    ],
+                    type="NodePort"
+                )
+            )
+
+            v1.create_namespaced_pod(namespace="lab-pods",body=pod)
+            v1.create_namespaced_service(namespace="lab-pods",body=service)
+            node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
+            
+            return Response({
+                'pod_name':pod_name,
+                'port':node_port,
+                'status':'created'
+            })
     

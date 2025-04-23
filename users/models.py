@@ -1,10 +1,6 @@
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import CustomUserManager
-
-
-
 
 class CustomUser(AbstractUser):
     red_team_percent = models.PositiveIntegerField(default=0)
@@ -14,8 +10,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
-
-
 class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True, null=True)
@@ -46,7 +40,3 @@ class Profile(models.Model):
     def save(self, *args, **kwargs):
         self.rank = self.calculate_rank() #update rank before saving
         super().save(*args, **kwargs)
-    
-
-   
- 
