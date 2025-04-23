@@ -9,6 +9,10 @@ from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .utils.percentage import calculate_solve_percentages
+from kubernetes import client,config
+
+config.load_incluster_config()
+v1=client.CoreV1Api()
 
 #lab views
 class LabList(APIView):
@@ -108,7 +112,6 @@ class SubmitFlag(APIView):
             "badge_earned": badge_created,
             "badge_name": badge_name if badge_created else None
         }, status=status.HTTP_200_OK)
-
         
 class SolveProgress(APIView):
     permission_classes = [IsAuthenticated]
@@ -118,7 +121,6 @@ class SolveProgress(APIView):
         
         progress = calculate_solve_percentages(user)
         return Response(progress, status=200)
-
     
 class SolvedLabList(APIView):
     permission_classes = [IsAuthenticated]
@@ -128,12 +130,6 @@ class SolvedLabList(APIView):
         serializer = SolvedLabSerializer(solved_labs, many=True)
         return Response(serializer.data)
 
-
-
-
-
-    
-
 class BadgeList(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -142,11 +138,6 @@ class BadgeList(APIView):
         serializer = BadgeSerializer(badges, many=True)
         return Response(serializer.data)
     
-
-
-        
-
-
 class Search(APIView):
     def get(self,request):
         query = request.GET.get('query',None)
@@ -156,4 +147,10 @@ class Search(APIView):
         results = Lab.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(author__icontains=query) | Q(category__name__icontains=query)).values("id","title","description","points","author","category__name")
 
         return Response(results)
+    
+class CreateMachine(APIView):
+    def post(self,request):
+        pod=client.V1Pod()
+        pod.spec=client.V1PodSpec(containers=[client.V1Container(image="python:slim")])
+        v1.create_namespaced_pod(namespace="lab-pods",body=pod)
     
