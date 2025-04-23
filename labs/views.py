@@ -205,8 +205,8 @@ class CreateMachine(APIView):
                 selector={'app':pod_name},
                 ports=[
                     client.V1ServicePort(
-                        port=8443,
-                        target_port=8443
+                        port=machine.port,
+                        target_port=machine.port
                     )
                 ],
                 type="NodePort"
