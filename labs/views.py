@@ -152,61 +152,73 @@ class Search(APIView):
         return Response(results)
     
 class CreateMachine(APIView):
+    @staticmethod
+    def check_pod(pod_name,pod_namespace):
+        try:
+            v1.read_namespaced_pod(name=pod_name,namespace=pod_namespace)
+            return True
+        except ApiException as e:
+            if e.status == 404:
+                return False
+            raise
+
     def post(self,request,pk):
         machine=get_object_or_404(Lab,pk=pk)
-        pod_name=f"{machine.id}-{hashlib.md5(request.user.username).hexdigest()}"
-        try:
-            v1.read_namespaced_pod(name=pod_name,namespace='labs-pods')
+        if not machine.is_machine:
+            return Response({'detail':'lab is not a machine'},status=status.HTTP_400_BAD_REQUEST)
+        
+        pod_name=f"{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
+        if self.check_pod(pod_name,'lab-pods'):
             node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
             return Response({
                 'pod_name':pod_name,
                 'port':node_port,
                 'status':'running'
             })
-        except ApiException as e:
-            container=client.V1Container(
+        
+        container=client.V1Container(
+            name=pod_name,
+            image=machine.image,
+            ports=[client.V1ContainerPort(container_port=8443)]
+        )
+
+        pod=client.V1Pod(
+            api_version="v1",
+            kind="Pod",
+            metadata=client.V1ObjectMeta(
                 name=pod_name,
-                image=machine.image,
-                ports=[client.V1ContainerPort(container_port=8443)]
+                labels={'app':pod_name,'lab':str(machine.id),'user':request.user.username}
+            ),
+            spec=client.V1PodSpec(
+                containers=[container],
+                active_deadline_seconds=14400
             )
+        )
 
-            pod=client.V1Pod(
-                api_version="v1",
-                kind="Pod",
-                metadata=client.V1ObjectMeta(
-                    name=pod_name,
-                    labels={'app':pod_name}
-                ),
-                spec=client.V1PodSpec(
-                    containers=[container]
-                )
+        service=client.V1Service(
+            api_version="v1",
+            kind="Service",
+            metadata=client.V1ObjectMeta(
+                name=pod_name+'-service'
+            ),
+            spec=client.V1ServiceSpec(
+                selector={'app':pod_name},
+                ports=[
+                    client.V1ServicePort(
+                        port=8443,
+                        target_port=8443
+                    )
+                ],
+                type="NodePort"
             )
+        )
 
-            service=client.V1Service(
-                api_version="v1",
-                kind="Service",
-                metadata=client.V1ObjectMeta(
-                    name=pod_name+'-service'
-                ),
-                spec=client.V1ServiceSpec(
-                    selector={'app':pod_name},
-                    ports=[
-                        client.V1ServicePort(
-                            port=8443,
-                            target_port=8443
-                        )
-                    ],
-                    type="NodePort"
-                )
-            )
-
-            v1.create_namespaced_pod(namespace="lab-pods",body=pod)
-            v1.create_namespaced_service(namespace="lab-pods",body=service)
-            node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
-            
-            return Response({
-                'pod_name':pod_name,
-                'port':node_port,
-                'status':'created'
-            })
-    
+        v1.create_namespaced_pod(namespace="lab-pods",body=pod)
+        v1.create_namespaced_service(namespace="lab-pods",body=service)
+        node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
+        
+        return Response({
+            'pod_name':pod_name,
+            'port':node_port,
+            'status':'created'
+        })
