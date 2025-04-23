@@ -151,8 +151,8 @@ class Search(APIView):
     
 class CreateMachine(APIView):
     def post(self,request,pk):
-        machnine=get_object_or_404(Machine,pk=pk)
-        pod_name=str(Machine.title)+str(request.user.username)
+        machine=get_object_or_404(Machine,pk=pk)
+        pod_name=str(machine.title)+str(request.user.username)
 
         pod=client.V1Pod(
             api_version="v1",
@@ -161,7 +161,7 @@ class CreateMachine(APIView):
 
         container=client.V1Container(
             name=pod_name,
-            image=machnine.image
+            image=machine.image
         )
 
         pod.spec=client.V1PodSpec(
