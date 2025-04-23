@@ -120,8 +120,8 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME','cybermaster-backend-db'),
         'USER': os.environ.get('DB_USER','dbuser'),
         'PASSWORD': os.environ.get('DB_PASSWORD','1234'),
-        # 'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
-        'HOST':os.environ.get('DB_HOST','127.0.0.1'),
+        'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
+        # 'HOST':os.environ.get('DB_HOST','127.0.0.1'),
         'PORT': os.environ.get('DB_PORT','5432'),
     }
 }
