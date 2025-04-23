@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  POSTGRES_DB: cybermaster-backend-db
+  POSTGRES_USER: dbuser
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: postgres-config

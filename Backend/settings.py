@@ -51,7 +51,9 @@ INSTALLED_APPS = [
     'chat',
     'categories',
     'certs',
+    'exams',
     'drf_yasg',
+    'corsheaders',
     'django_rest_passwordreset', # Swagger stuff for docs (TODO: comment out later)
 ]
 
@@ -78,6 +80,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -117,7 +120,8 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME','cybermaster-backend-db'),
         'USER': os.environ.get('DB_USER','dbuser'),
         'PASSWORD': os.environ.get('DB_PASSWORD','1234'),
-        'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
+        # 'HOST':os.environ.get('DB_HOST','cybermaster-postgres.default.svc.cluster.local'),
+        'HOST':os.environ.get('DB_HOST','127.0.0.1'),
         'PORT': os.environ.get('DB_PORT','5432'),
     }
 }
@@ -178,12 +182,14 @@ STATICFILES_DIRS=[
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GOOGLE_API_KEY = 'AIzaSyB-TzEi633vh6CQy73MRi-_LS4v7mjoYVc'
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME':timedelta(minutes=90)
 }
 
-
-
+CORS_ALLOWED_ORIGINS=[
+    'http://127.0.0.1'
+]
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"

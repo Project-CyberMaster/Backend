@@ -17,10 +17,11 @@ spec:
       labels:
         app: cybermaster-backend
     spec:
+      serviceAccountName: django-app
       containers:
       - image: 1nitramfs/cybermaster-backend:latest
         name: cybermaster-backend
-        resources: {}
+        resources: {}  
       imagePullSecrets:
       - name: pull-secret
 status: {}

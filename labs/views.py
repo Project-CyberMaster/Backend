@@ -10,9 +10,6 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .utils.percentage import calculate_solve_percentages
 
-
-
-    
 #lab views
 class LabList(APIView):
     def get(self, request, format=None):
