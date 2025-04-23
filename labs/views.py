@@ -182,7 +182,7 @@ class CreateMachine(APIView):
                 selector={'app':pod_name},
                 ports=[
                     client.V1ServicePort(
-                        port=9876,
+                        port=8443,
                         target_port=8443
                     )
                 ],
@@ -192,9 +192,10 @@ class CreateMachine(APIView):
 
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
         v1.create_namespaced_service(namespace="lab-pods",body=service)
-
+        node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
         return Response({
             'pod_name':pod_name,
+            'port':node_port,
             'status':'created'
         })
     
