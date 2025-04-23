@@ -154,23 +154,47 @@ class CreateMachine(APIView):
         machine=get_object_or_404(Machine,pk=pk)
         pod_name=str(machine.title)+str(request.user.username)
 
-        pod=client.V1Pod(
-            api_version="v1",
-            kind="Pod"
-        )
-
         container=client.V1Container(
             name=pod_name,
-            image=machine.image
+            image=machine.image,
+            ports=[client.V1ContainerPort(container_port=8443)]
         )
 
-        pod.spec=client.V1PodSpec(
-            containers=[container]
+        pod=client.V1Pod(
+            api_version="v1",
+            kind="Pod",
+            metadata=client.V1ObjectMeta(
+                name=pod_name,
+                labels={'app':pod_name}
+            ),
+            spec=client.V1PodSpec(
+                containers=[container]
+            )
         )
 
-        pod.metadata=client.V1ObjectMeta(
-            name=pod_name
+        service=client.V1Service(
+            api_version="v1",
+            kind="Service",
+            metadata=client.V1ObjectMeta(
+                name=pod_name+'-service'
+            ),
+            spec=client.V1ServiceSpec(
+                selector={'app':pod_name},
+                ports=[
+                    client.V1ServicePort(
+                        port=9876,
+                        target_port=8443
+                    )
+                ],
+                type="NodePort"
+            )
         )
 
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
+        v1.create_namespaced_service(namespace="lab-pods",body=service)
+
+        return Response({
+            'pod_name':pod_name,
+            'status':'created'
+        })
     
