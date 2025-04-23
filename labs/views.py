@@ -1,3 +1,4 @@
+import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -151,6 +152,6 @@ class Search(APIView):
 class CreateMachine(APIView):
     def post(self,request):
         pod=client.V1Pod()
-        pod.spec=client.V1PodSpec(containers=[client.V1Container(image="python:slim")])
+        pod.spec=client.V1PodSpec(containers=[client.V1Container(name="something"+str(random.randint(1,1000)),image="python:slim")])
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
     
