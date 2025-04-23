@@ -151,7 +151,25 @@ class Search(APIView):
     
 class CreateMachine(APIView):
     def post(self,request):
-        pod=client.V1Pod()
-        pod.spec=client.V1PodSpec(containers=[client.V1Container(name="something"+str(random.randint(1,1000)),image="python:slim")])
+        pod_name="something"+str(random.randint(1,1000))
+
+        pod=client.V1Pod(
+            api_version="v1",
+            kind="Pod"
+        )
+
+        container=client.V1Container(
+            name=pod_name,
+            image="python:slim"
+        )
+
+        pod.spec=client.V1PodSpec(
+            containers=[container]
+        )
+
+        pod.metadata=client.V1ObjectMeta(
+            name=pod_name
+        )
+
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
     
