@@ -150,8 +150,9 @@ class Search(APIView):
         return Response(results)
     
 class CreateMachine(APIView):
-    def post(self,request):
-        pod_name="something"+str(random.randint(1,1000))
+    def post(self,request,pk):
+        machnine=get_object_or_404(Machine,pk=pk)
+        pod_name=Machine.title+request.user.username
 
         pod=client.V1Pod(
             api_version="v1",
@@ -160,7 +161,7 @@ class CreateMachine(APIView):
 
         container=client.V1Container(
             name=pod_name,
-            image="python:slim"
+            image=machnine.image
         )
 
         pod.spec=client.V1PodSpec(

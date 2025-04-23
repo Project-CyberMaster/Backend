@@ -12,5 +12,5 @@ urlpatterns = [
     path('submit_flag/<int:lab_id>/', SubmitFlag.as_view(), name='submit-flag'),
     path('badges/', BadgeList.as_view(), name='badge-list'),
     path('solved_labs/', SolvedLabList.as_view(), name='solved-lab-list'),
-    path('spin/', CreateMachine.as_view(), name='spin'),
+    path('spin/<int:pk>', CreateMachine.as_view(), name='spin'),
 ]
