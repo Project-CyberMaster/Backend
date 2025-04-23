@@ -154,7 +154,7 @@ class Search(APIView):
 class CreateMachine(APIView):
     def post(self,request,pk):
         machine=get_object_or_404(Lab,pk=pk)
-        pod_name=f"{machine.title}-{hashlib.md5(request.user.username).hexdigest()}"
+        pod_name=f"{machine.id}-{hashlib.md5(request.user.username).hexdigest()}"
         try:
             v1.read_namespaced_pod(name=pod_name,namespace='labs-pods')
             node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
