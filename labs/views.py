@@ -167,7 +167,7 @@ class CreateMachine(APIView):
         if not machine.is_machine:
             return Response({'detail':'lab is not a machine'},status=status.HTTP_400_BAD_REQUEST)
         
-        pod_name=f"{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
+        pod_name=f"machine-{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
         if self.check_pod(pod_name,'lab-pods'):
             node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
             return Response({
