@@ -152,7 +152,7 @@ class Search(APIView):
 class CreateMachine(APIView):
     def post(self,request,pk):
         machnine=get_object_or_404(Machine,pk=pk)
-        pod_name=Machine.title+request.user.username
+        pod_name=str(Machine.title)+str(request.user.username)
 
         pod=client.V1Pod(
             api_version="v1",
