@@ -209,7 +209,7 @@ class CreateMachine(APIView):
                         target_port=machine.port
                     )
                 ],
-                type="NodePort"
+                # type="NodePort"
             )
         )
 

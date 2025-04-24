@@ -13,6 +13,6 @@ spec:
     targetPort: 8000
   selector:
     app: cybermaster-backend
-  type: NodePort
+  type: ClusterIP
 status:
   loadBalancer: {}
