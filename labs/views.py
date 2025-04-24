@@ -169,10 +169,8 @@ class CreateMachine(APIView):
         
         pod_name=f"machine-{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
         if self.check_pod(pod_name,'lab-pods'):
-            node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
             return Response({
                 'pod_name':pod_name,
-                'port':node_port,
                 'status':'running'
             })
         
@@ -208,17 +206,47 @@ class CreateMachine(APIView):
                         port=machine.port,
                         target_port=machine.port
                     )
-                ],
-                # type="NodePort"
+                ]
+            )
+        )
+
+        ingress=client.V1Ingress(
+            api_version="v1",
+            kind="Ingress",
+            metadata=client.V1ObjectMeta(
+                name=pod_name+'-ingress'
+            ),
+            spec=client.V1IngressSpec(
+                rules=[
+                    client.V1IngressRule(
+                        host="cybermaster.tech",
+                        http=client.V1HTTPIngressRuleValue(
+                            paths=[
+                                client.V1HTTPIngressPath(
+                                    path=f"/{request.user.username}/{machine.id}",
+                                    path_type="Prefix",
+                                    backend=client.V1IngressBackend(
+                                        service=client.V1IngressServiceBackend(
+                                            name=pod_name+'-service',
+                                            port=client.V1ServiceBackendPort(
+                                                number=machine.port
+                                            )
+                                        )
+                                    )
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         )
 
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
         v1.create_namespaced_service(namespace="lab-pods",body=service)
-        node_port=v1.read_namespaced_service(name=pod_name+'-service',namespace='lab-pods').spec.ports[0].node_port
+        v1_api=client.NetworkingV1Api(client.ApiClient(client.Configuration()))
+        v1_api.create_namespaced_ingress(namespace="lab-pods",body=ingress)
         
         return Response({
             'pod_name':pod_name,
-            'port':node_port,
             'status':'created'
         })

@@ -10,7 +10,7 @@ spec:
       paths:
       - backend:
           service:
-            name: backend-backend
+            name: cybermaster-backend
             port:
               number: 8000
         path: /api
