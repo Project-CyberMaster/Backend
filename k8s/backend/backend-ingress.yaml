@@ -15,5 +15,19 @@ spec:
               number: 8000
         path: /api
         pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /admin
+        pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /static
+        pathType: Prefix
 status:
   loadBalancer: {}

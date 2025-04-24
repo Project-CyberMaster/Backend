@@ -206,7 +206,7 @@ class CreateMachine(APIView):
                         port=machine.port,
                         target_port=machine.port
                     )
-                ]
+                ],
             )
         )
 
@@ -243,7 +243,7 @@ class CreateMachine(APIView):
 
         v1.create_namespaced_pod(namespace="lab-pods",body=pod)
         v1.create_namespaced_service(namespace="lab-pods",body=service)
-        v1_api=client.NetworkingV1Api(client.ApiClient(client.Configuration()))
+        v1_api=client.NetworkingV1Api(client.ApiClient())
         v1_api.create_namespaced_ingress(namespace="lab-pods",body=ingress)
         
         return Response({
