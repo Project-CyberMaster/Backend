@@ -152,6 +152,8 @@ class Search(APIView):
         return Response(results)
     
 class CreateMachine(APIView):
+    permission_classes = [IsAuthenticated]
+
     @staticmethod
     def check_pod(pod_name,pod_namespace):
         try:
@@ -223,7 +225,7 @@ class CreateMachine(APIView):
                         http=client.V1HTTPIngressRuleValue(
                             paths=[
                                 client.V1HTTPIngressPath(
-                                    path=f"/{request.user.username.strip('/')}/{machine.id}",
+                                    path=f"/{hashlib.md5(request.user.username.encode()).hexdigest()}/{machine.id}",
                                     path_type="Prefix",
                                     backend=client.V1IngressBackend(
                                         service=client.V1IngressServiceBackend(
