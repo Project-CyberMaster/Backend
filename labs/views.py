@@ -211,7 +211,7 @@ class CreateMachine(APIView):
         )
 
         ingress=client.V1Ingress(
-            api_version="v1",
+            api_version="networking.k8s.io/v1",
             kind="Ingress",
             metadata=client.V1ObjectMeta(
                 name=pod_name+'-ingress'
