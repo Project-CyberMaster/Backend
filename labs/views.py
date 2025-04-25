@@ -223,7 +223,7 @@ class CreateMachine(APIView):
                         http=client.V1HTTPIngressRuleValue(
                             paths=[
                                 client.V1HTTPIngressPath(
-                                    path=f"/{request.user.username}/{machine.id}",
+                                    path=f"/{request.user.username.strip('/')}/{machine.id}",
                                     path_type="Prefix",
                                     backend=client.V1IngressBackend(
                                         service=client.V1IngressServiceBackend(
