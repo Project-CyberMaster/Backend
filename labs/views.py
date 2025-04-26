@@ -16,6 +16,8 @@ import hashlib
 
 config.load_incluster_config()
 v1=client.CoreV1Api()
+batch_v1=client.BatchV1Api()
+net_v1=client.NetworkingV1Api(client.ApiClient())
 
 #lab views
 class LabList(APIView):
@@ -173,6 +175,7 @@ class CreateMachine(APIView):
         if self.check_pod(pod_name,'lab-pods'):
             return Response({
                 'pod_name':pod_name,
+                'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
                 'status':'running'
             })
         
@@ -182,24 +185,46 @@ class CreateMachine(APIView):
             ports=[client.V1ContainerPort(container_port=8443)]
         )
 
-        pod=client.V1Pod(
-            api_version="v1",
-            kind="Pod",
+        job=client.V1Job(
+            api_version="batch/v1",
+            kind="Job",
             metadata=client.V1ObjectMeta(
                 name=pod_name,
-                labels={'app':pod_name,'lab':str(machine.id),'user':request.user.username}
             ),
-            spec=client.V1PodSpec(
-                containers=[container],
-                active_deadline_seconds=120#14400
+            spec=client.V1JobSpec(
+                ttl_seconds_after_finished=1,
+                active_deadline_seconds=120,
+                template=client.V1PodTemplateSpec(
+                    metadata=client.V1ObjectMeta(
+                        name=pod_name,
+                        labels={'app':pod_name,'lab':str(machine.id),'user':request.user.username}
+                    ),
+                    spec=client.V1PodSpec(
+                        containers=[container],
+                        restart_policy="Never"
+                    )
+                )
             )
         )
+        created_job=batch_v1.create_namespaced_job(namespace="lab-pods",body=job)
+
+        owner_refrences=[
+            client.V1OwnerReference(
+                api_version="batch/v1",
+                kind="Job",
+                name=pod_name,
+                uid=created_job.metadata.uid,
+                controller=True,
+                block_owner_deletion=True
+            )
+        ]
 
         service=client.V1Service(
             api_version="v1",
             kind="Service",
             metadata=client.V1ObjectMeta(
-                name=pod_name+'-service'
+                name=pod_name+'-service',
+                owner_references=owner_refrences
             ),
             spec=client.V1ServiceSpec(
                 selector={'app':pod_name},
@@ -217,6 +242,7 @@ class CreateMachine(APIView):
             kind="Ingress",
             metadata=client.V1ObjectMeta(
                 name=pod_name+'-ingress',
+                owner_references=owner_refrences,
                 annotations={
                     "traefik.ingress.kubernetes.io/router.middlewares": "lab-pods-stripprefix@kubernetescrd"
                 }
@@ -246,12 +272,11 @@ class CreateMachine(APIView):
             )
         )
 
-        v1.create_namespaced_pod(namespace="lab-pods",body=pod)
         v1.create_namespaced_service(namespace="lab-pods",body=service)
-        v1_api=client.NetworkingV1Api(client.ApiClient())
-        v1_api.create_namespaced_ingress(namespace="lab-pods",body=ingress)
+        net_v1.create_namespaced_ingress(namespace="lab-pods",body=ingress)
         
         return Response({
             'pod_name':pod_name,
+            'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
             'status':'created'
         })
