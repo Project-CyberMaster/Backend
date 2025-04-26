@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from certs.serializers import CertificationSerializer
 from .models import *
 from courses.models import Enrollment
+from exams.models import *
 import segno
 from playwright.sync_api import sync_playwright
 
@@ -34,8 +35,14 @@ class GetCert(APIView):
     def get(self,request,pk):
         course = get_object_or_404(Course,pk=pk)
         enrollment=get_object_or_404(Enrollment,user=request.user,course=course)
+        exam=get_object_or_404(Exam,course=course)
+        passing_attempt=ExamAttempt.objects.filter(
+            user=request.user,
+            exam=exam,
+            cert_ready=True
+        ).first()
 
-        if enrollment.cert_ready:
+        if passing_attempt:
             cert, _ = Certification.objects.get_or_create(
                 user=request.user,
                 course = course,

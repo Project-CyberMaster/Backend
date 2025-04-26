@@ -21,7 +21,6 @@ spec:
       containers:
       - image: 1nitramfs/cybermaster-backend:latest
         name: cybermaster-backend
-        imagePullPolicy: Never
         resources: {}  
       imagePullSecrets:
       - name: pull-secret
