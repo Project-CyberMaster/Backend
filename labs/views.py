@@ -216,7 +216,10 @@ class CreateMachine(APIView):
             api_version="networking.k8s.io/v1",
             kind="Ingress",
             metadata=client.V1ObjectMeta(
-                name=pod_name+'-ingress'
+                name=pod_name+'-ingress',
+                annotations={
+                    "traefik.ingress.kubernetes.io/router.middlewares": "lab-pods-stripprefix@kubernetescrd"
+                }
             ),
             spec=client.V1IngressSpec(
                 rules=[
@@ -225,7 +228,7 @@ class CreateMachine(APIView):
                         http=client.V1HTTPIngressRuleValue(
                             paths=[
                                 client.V1HTTPIngressPath(
-                                    path=f"/{hashlib.md5(request.user.username.encode()).hexdigest()}/{machine.id}",
+                                    path=f"/{request.user.username}/{machine.id}",
                                     path_type="Prefix",
                                     backend=client.V1IngressBackend(
                                         service=client.V1IngressServiceBackend(

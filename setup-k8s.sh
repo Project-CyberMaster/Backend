@@ -26,5 +26,6 @@ kubectl apply -f k8s/config/configmaps
 kubectl apply -f k8s/config/namespaces
 kubectl apply -f k8s/config/serviceaccounts
 kubectl apply -f k8s/config/roles
+kubectl apply -f k8s/config/middleware
 kubectl apply -f k8s/postgres
 kubectl apply -f k8s/backend
