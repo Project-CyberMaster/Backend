@@ -27,7 +27,9 @@ class LabSerializer(serializers.ModelSerializer):
 
     def get_files(self,obj):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
 
         if 'files' in expand:
             return LabResourceFileSerializer(obj.files.all(),many=True,context={'request':request}).data

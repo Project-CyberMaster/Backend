@@ -10,11 +10,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import *
 from .serializers import *
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class ExamList(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
+    @swagger_auto_schema(
+        operation_summary="List all available exams",
+        operation_description="Returns a list of exams that the authenticated user can attempt.",
+        responses={200: ExamSerializer(many=True)}
+    )
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -24,7 +31,12 @@ class GetExam(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-    
+    @swagger_auto_schema(
+        operation_summary="Retrieve exam details",
+        operation_description="Fetches detailed information about a specific exam.",
+        responses={200: ExamSerializer()}
+    )
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
         return context
@@ -32,6 +44,11 @@ class GetExam(generics.RetrieveAPIView):
 class QuestionList(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = QuestionSerializer
+    @swagger_auto_schema(
+        operation_summary="List questions for an exam attempt",
+        operation_description="Returns the list of questions for an active exam attempt. If no active attempt exists, returns 403.",
+        responses={200: QuestionSerializer(many=True), 403: 'No active attempt or exam timeout'}
+    )
 
     def get_queryset(self):
         exam = get_object_or_404(Exam, pk=self.kwargs.get("pk"))
@@ -96,6 +113,11 @@ class GetQuestion(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = QuestionSerializer
     lookup_field = "order_index"
+    @swagger_auto_schema(
+        operation_summary="Retrieve a specific question by order index",
+        operation_description="Fetch a single question during an active exam attempt, using its order index within the exam.",
+        responses={200: QuestionSerializer(), 403: 'No active attempt or exam timeout'}
+    )
 
     def get_queryset(self):
         exam = get_object_or_404(Exam, pk=self.kwargs.get("pk"))
@@ -152,7 +174,15 @@ class GetQuestion(generics.RetrieveAPIView):
 
 class StartExam(APIView):
     permission_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        operation_summary="Start a new exam attempt",
+        operation_description="Starts a new exam attempt for the user, unless an active attempt already exists or the user already passed.",
+        responses={
+            201: ExamAttemptSerializer(),
+            400: 'Already passed or unfinished attempt exists'
+        }
+    )
+
     def post(self, request, pk):
         exam = get_object_or_404(Exam, pk=pk)
         
@@ -221,7 +251,24 @@ class StartExam(APIView):
 
 class SubmitAnswer(APIView):
     permission_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        operation_summary="Submit an answer to a question",
+        operation_description="Submits an answer for a specific question during an active exam attempt.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["question_id", "answer"],
+            properties={
+                "question_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "answer": openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        ),
+        responses={
+            200: 'Answer submitted successfully',
+            400: 'Invalid input or already answered',
+            403: 'Exam timed out'
+        }
+    )
+
     def post(self, request, pk):
         exam = get_object_or_404(Exam, pk=pk)
         
@@ -318,7 +365,15 @@ class SubmitAnswer(APIView):
        
 class FinishExam(APIView):
     permission_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        operation_summary="Finish an exam attempt",
+        operation_description="Manually finishes the current active exam attempt and calculates the final score.",
+        responses={
+            200: ExamAttemptSerializer(),
+            400: 'Another passing attempt was recorded'
+        }
+    )
+
     def post(self, request, pk):
         exam = get_object_or_404(Exam, pk=pk)
         exam_attempt = get_object_or_404(

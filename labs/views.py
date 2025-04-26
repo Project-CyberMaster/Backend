@@ -13,6 +13,8 @@ from .utils.percentage import calculate_solve_percentages
 from kubernetes import client,config
 from kubernetes.client.rest import ApiException
 import hashlib
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 config.load_incluster_config()
 v1=client.CoreV1Api()
@@ -21,6 +23,12 @@ net_v1=client.NetworkingV1Api(client.ApiClient())
 
 #lab views
 class LabList(APIView):
+    @swagger_auto_schema(
+        operation_summary="List all labs",
+        operation_description="Returns a list of all labs. Can be filtered by difficulty via query parameter.",
+        responses={200: LabSerializer(many=True)}
+    )
+
     def get(self, request, format=None):
         difficulty = request.query_params.get('difficulty', None) 
         labs = Lab.objects.all()
@@ -32,6 +40,12 @@ class LabList(APIView):
         return Response(serializer.data)
 
 class LabDetail(APIView):
+    @swagger_auto_schema(
+        operation_summary="Retrieve lab details",
+        operation_description="Fetch detailed information for a specific lab.",
+        responses={200: LabSerializer()}
+    )
+
     def get(self, request, pk, format=None):
         lab = get_object_or_404(Lab,pk=pk)
         serializer = LabSerializer(lab, context={'request': request})
@@ -40,6 +54,11 @@ class LabDetail(APIView):
 #labresources views
 class LabResourceFileList(APIView):
     parser_classes = [MultiPartParser, FormParser]  # Allow file uploads
+    @swagger_auto_schema(
+        operation_summary="List resource files for a lab",
+        operation_description="Returns all resource files attached to a specific lab.",
+        responses={200: LabResourceFileSerializer(many=True)}
+    )
 
     def get(self, request, lab_id, format=None):
         lab_files = LabResourceFile.objects.filter(resource_id=lab_id)
@@ -47,6 +66,12 @@ class LabResourceFileList(APIView):
         return Response(serializer.data)
 
 class LabResourceFileDetail(APIView):
+    @swagger_auto_schema(
+        operation_summary="Retrieve a lab resource file",
+        operation_description="Fetch details for a single resource file attached to a lab.",
+        responses={200: LabResourceFileSerializer()}
+    )
+
     def get(self, request, pk, format=None):
         lab_file = get_object_or_404(LabResourceFile,pk=pk)
         serializer = LabResourceFileSerializer(lab_file, context={'request': request})
@@ -54,6 +79,23 @@ class LabResourceFileDetail(APIView):
 
 class SubmitFlag(APIView):
     permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Submit a flag for a lab",
+        operation_description="Submit a flag to solve a lab. If correct, points and badges are awarded.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["flag"],
+            properties={
+                "flag": openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        ),
+        responses={
+            200: 'Flag submission result with earned badges and progress',
+            400: 'Incorrect flag or bad input',
+            404: 'Lab not found'
+        }
+    )
 
     def post(self, request, lab_id, format=None):
         try:
@@ -120,6 +162,11 @@ class SubmitFlag(APIView):
         
 class SolveProgress(APIView):
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        operation_summary="Get user's solve progress",
+        operation_description="Returns the user's current solve progress across categories (offensive and defensive).",
+        responses={200: 'Progress percentages'}
+    )
 
     def get(self, request):
         user = request.user
@@ -129,6 +176,11 @@ class SolveProgress(APIView):
     
 class SolvedLabList(APIView):
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        operation_summary="List solved labs",
+        operation_description="Returns the list of labs that the authenticated user has solved.",
+        responses={200: SolvedLabSerializer(many=True)}
+    )
 
     def get(self, request, format=None):
         solved_labs = SolvedLab.objects.filter(user=request.user)
@@ -137,6 +189,11 @@ class SolvedLabList(APIView):
 
 class BadgeList(APIView):
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        operation_summary="List earned badges",
+        operation_description="Returns all badges earned by the authenticated user.",
+        responses={200: BadgeSerializer(many=True)}
+    )
 
     def get(self, request, format=None):
         badges = Badge.objects.filter(user=request.user)
@@ -144,6 +201,15 @@ class BadgeList(APIView):
         return Response(serializer.data)
     
 class Search(APIView):
+    @swagger_auto_schema(
+        operation_summary="Search labs",
+        operation_description="Search for labs by title, description, author, or category name.",
+        manual_parameters=[
+            openapi.Parameter('query', openapi.IN_QUERY, description="Search keyword", type=openapi.TYPE_STRING)
+        ],
+        responses={200: 'Search results list', 400: 'Query parameter missing'}
+    )
+
     def get(self,request):
         query = request.GET.get('query',None)
         if not query:
@@ -165,6 +231,16 @@ class CreateMachine(APIView):
             if e.status == 404:
                 return False
             raise
+    @swagger_auto_schema(
+        operation_summary="Create a machine instance for a lab",
+        operation_description="Creates a machine instance (Kubernetes pod) for the user to work on a machine-type lab.",
+        responses={
+            200: 'Machine already running',
+            201: 'Machine created successfully',
+            400: 'Lab is not a machine',
+            404: 'Lab not found'
+        }
+    )
 
     def post(self,request,pk):
         machine=get_object_or_404(Lab,pk=pk)
@@ -279,4 +355,4 @@ class CreateMachine(APIView):
             'pod_name':pod_name,
             'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
             'status':'created'
-        })
+        },status=status.HTTP_201_CREATED)
