@@ -4,7 +4,6 @@ from .models import *
 from .serializers import *
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 class CategoryListCreate(APIView):
