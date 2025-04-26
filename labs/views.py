@@ -191,7 +191,7 @@ class CreateMachine(APIView):
             ),
             spec=client.V1PodSpec(
                 containers=[container],
-                active_deadline_seconds=14400
+                active_deadline_seconds=120#14400
             )
         )
 
