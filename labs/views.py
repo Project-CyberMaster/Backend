@@ -269,7 +269,7 @@ class CreateMachine(APIView):
             ),
             spec=client.V1JobSpec(
                 ttl_seconds_after_finished=1,
-                active_deadline_seconds=120,
+                active_deadline_seconds=600,
                 template=client.V1PodTemplateSpec(
                     metadata=client.V1ObjectMeta(
                         name=pod_name,
