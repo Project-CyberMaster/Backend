@@ -21,13 +21,15 @@ class LabSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lab
         fields = [
-            'id', 'title', 'description', 'points', 'author', 'category', 'category_name',
+            'id', 'is_machine','title', 'description', 'points','lesson', 'author', 'category', 'category_name',
             'connection_info', 'difficulty', 'files'
         ]
 
     def get_files(self,obj):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
 
         if 'files' in expand:
             return LabResourceFileSerializer(obj.files.all(),many=True,context={'request':request}).data
@@ -41,8 +43,6 @@ class SolvedLabSerializer(serializers.ModelSerializer):
     class Meta:
         model = SolvedLab
         fields = ['id', 'user', 'lab_title', 'solved_on']
-
-
 
 class BadgeSerializer(serializers.ModelSerializer):
     class Meta:

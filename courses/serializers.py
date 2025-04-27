@@ -13,7 +13,9 @@ class LessonSerializer(serializers.ModelSerializer):
     
     def get_fields(self):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
         fields=super().get_fields()
 
         if 'link' not in expand:
@@ -57,7 +59,9 @@ class LessonSerializer(serializers.ModelSerializer):
     
     def get_labs(self,obj):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
 
         if 'labs' in expand:
             return LabSerializer(obj.labs.all(),many=True,read_only=True,context={'request':request}).data
@@ -79,7 +83,9 @@ class ChapterSerializer(serializers.ModelSerializer):
 
     def get_lessons(self,obj):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
 
         if 'lessons' in expand:
             return LessonSerializer(obj.lessons.all(),many=True,read_only=True,context={'request':request}).data
@@ -97,7 +103,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_chapters(self,obj):
         request=self.context.get('request')
-        expand=request.query_params.get('expand','').split(',')
+        expand=[]
+        if request:
+            expand=request.query_params.get('expand','').split(',')
 
         if 'chapters' in expand:
             return ChapterSerializer(obj.chapters.all(),many=True,read_only=True,context={'request':request}).data

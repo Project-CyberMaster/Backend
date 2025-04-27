@@ -13,20 +13,21 @@ class Lab(models.Model):
         ('hard', 'Hard'),
     ]
 
+    is_machine=models.BooleanField(default=False)
     title = models.CharField(max_length=255)
     description = models.TextField()
     points = models.IntegerField()
     author = models.CharField(max_length=255)
     category = models.ForeignKey(Category, related_name='labs', on_delete=models.CASCADE)
-    #lesson = models.ForeignKey(Lesson, related_name='labs', on_delete=models.CASCADE,)
+    image = models.CharField(max_length=255,blank=True, null=True)
+    port = models.IntegerField(default=8443)
+    lesson = models.ForeignKey(Lesson, related_name='labs', on_delete=models.CASCADE,)
     connection_info = models.TextField(blank=True, null=True)  
     flag = models.CharField(max_length=255, blank=True, null=True) 
     difficulty = models.CharField(max_length=50, choices=DIFFICULTY_CHOICES, default='easy') 
 
     def __str__(self):
         return f"{self.title} ({self.difficulty})"
-
-
 
 class LabResourceFile(models.Model):
     resource = models.ForeignKey(Lab, related_name='files', on_delete=models.CASCADE)
@@ -37,9 +38,6 @@ class LabResourceFile(models.Model):
      if self.file:
         return f"Resource File: {self.file.name}"
      return "Resource File: [No file uploaded]"
-
-    
-
 
 class SolvedLab(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

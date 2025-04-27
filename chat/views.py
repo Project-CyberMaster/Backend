@@ -6,12 +6,19 @@ from django.contrib.auth import get_user_model
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .utils.gemini import generate_with_gemini
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 User = get_user_model()
 
 class GeminiAssistantAPI(APIView):
     permission_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        operation_summary="Get or Create Active Conversation",
+        operation_description="Retrieves the user's active conversation or creates one if none exists.",
+        responses={200: ConversationSerializer()}
+    )
+
     def get(self, request):
         # Get or create active conversation
         conversation, created = Conversation.objects.get_or_create(
@@ -27,6 +34,25 @@ class GeminiAssistantAPI(APIView):
         serializer = ConversationSerializer(conversation)
         return Response(serializer.data)
     
+    @swagger_auto_schema(
+        operation_summary="Send Message to Gemini Assistant",
+        operation_description="Sends a user message to the Gemini assistant and receives a generated response.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'message': openapi.Schema(type=openapi.TYPE_STRING, description='User message to the assistant'),
+                'max_tokens': openapi.Schema(type=openapi.TYPE_INTEGER, description='Maximum tokens for the model response', default=300),
+            },
+            required=['message']
+        ),
+        responses={200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'response': openapi.Schema(type=openapi.TYPE_STRING, description='Assistant\'s reply'),
+                'conversation_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the active conversation'),
+            }
+        )}
+    )
     def post(self, request):
         user_message = request.data.get('message', '')
         max_tokens = request.data.get('max_tokens', 300)
@@ -77,7 +103,18 @@ class GeminiAssistantAPI(APIView):
         })
 class ResetConversationAPI(APIView):
     permission_classes = [IsAuthenticated]
-    
+    @swagger_auto_schema(
+        operation_summary="Reset Conversation",
+        operation_description="Deletes all active conversations and associated messages for the authenticated user.",
+        responses={200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING, example='success'),
+                'message': openapi.Schema(type=openapi.TYPE_STRING, example='Conversation and messages deleted successfully'),
+            }
+        )}
+    )
+
     def post(self, request):
         
         conversations = Conversation.objects.filter(user=request.user, is_active=True)

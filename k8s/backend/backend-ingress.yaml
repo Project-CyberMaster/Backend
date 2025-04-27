@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.inetworking.k8s.ioo/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: cybermaster-backend-ingress
+spec:
+  rules:
+  - host: cybermaster.tech
+    http:
+      paths:
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /api
+        pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /admin
+        pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /static
+        pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000
+        path: /media
+        pathType: Prefix
+status:
+  loadBalancer: {}

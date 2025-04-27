@@ -9,8 +9,11 @@ from django.core.files.base import ContentFile
 from certs.serializers import CertificationSerializer
 from .models import *
 from courses.models import Enrollment
+from exams.models import *
 import segno
 from playwright.sync_api import sync_playwright
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 def render_pdf(html, buffer):
     with sync_playwright() as p:
@@ -31,11 +34,33 @@ def render_pdf(html, buffer):
 class GetCert(APIView):
     permission_classes=[IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Get or create a certification PDF for a user who passed the exam",
+        responses={
+            200: CertificationSerializer,
+            400: 'Certification not ready'
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                'pk',
+                openapi.IN_PATH,
+                description="Primary key of the course",
+                type=openapi.TYPE_INTEGER
+            )
+        ]
+    )
+
     def get(self,request,pk):
         course = get_object_or_404(Course,pk=pk)
         enrollment=get_object_or_404(Enrollment,user=request.user,course=course)
+        exam=get_object_or_404(Exam,course=course)
+        passing_attempt=ExamAttempt.objects.filter(
+            user=request.user,
+            exam=exam,
+            cert_ready=True
+        ).first()
 
-        if enrollment.cert_ready:
+        if passing_attempt:
             cert, _ = Certification.objects.get_or_create(
                 user=request.user,
                 course = course,
@@ -75,6 +100,32 @@ class GetCert(APIView):
             }, status=400)
         
 class Validate(APIView):
+    @swagger_auto_schema(
+        operation_description="Validate a certification by its certificate ID",
+        responses={
+            200: openapi.Response(
+                description="Validation result",
+                examples={
+                    "application/json": {
+                        "status": "Valid",
+                        "cert_id": "123456",
+                        "username": "user1",
+                        "course": "Python Basics",
+                        "date": "2025-04-20"
+                    }
+                }
+            ),
+            404: 'Certificate not found'
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                'id',
+                openapi.IN_PATH,
+                description="Certificate ID to validate",
+                type=openapi.TYPE_STRING
+            )
+        ]
+    )
     def get(self,request,id):
         cert = Certification.objects.filter(cert_id=id).first()
         if not cert:
