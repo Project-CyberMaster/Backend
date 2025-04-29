@@ -248,7 +248,7 @@ class CreateMachine(APIView):
             return Response({'detail':'lab is not a machine'},status=status.HTTP_400_BAD_REQUEST)
         
         pod_name=f"machine-{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
-        url=f"/{request.user.username}/{hashlib.md5(random.random())}/{machine.id}/"
+        url=f"/{request.user.username}/{machine.id}/"
 
         if self.check_pod(pod_name,'lab-pods'):
             return Response({
