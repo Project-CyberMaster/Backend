@@ -20,12 +20,13 @@ kubectl create secret generic pull-secret \
     --type=kubernetes.io/dockerconfigjson \
     --dry-run=client -o yaml > ./k8s/config/secrets/pull-secret.yaml
 
-# Aplly everything
+# Apply everything
 kubectl apply -f k8s/config/secrets
 kubectl apply -f k8s/config/configmaps
 kubectl apply -f k8s/config/namespaces
 kubectl apply -f k8s/config/serviceaccounts
 kubectl apply -f k8s/config/roles
 kubectl apply -f k8s/config/middleware
+kubectl apply -f k8s/config/security
 kubectl apply -f k8s/postgres
 kubectl apply -f k8s/backend

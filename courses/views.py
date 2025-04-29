@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.forms import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -112,11 +113,14 @@ class Enroll(generics.CreateAPIView):
     def perform_create(self, serializer):
         course = get_object_or_404(Course,pk=self.kwargs['pk'])
         
-        serializer.save(
-            course = course,
-            user=self.request.user
-        )
-        return super().perform_create(serializer)
+        try:
+            serializer.save(
+                course = course,
+                user=self.request.user
+            )
+            return super().perform_create(serializer)
+        except IntegrityError:
+            return ValidationError({"detail": "you are already enrolled in this course"})
     
 class CompleteLesson(generics.UpdateAPIView):
     serializer_class=EnrollmentsSerializer
