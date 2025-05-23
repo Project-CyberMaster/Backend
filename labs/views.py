@@ -107,21 +107,21 @@ class SubmitFlag(APIView):
         if user_flag != lab.flag:
             return Response({"message": "Incorrect flag!"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure profile exists (create if not)
+       
         profile, _ = Profile.objects.get_or_create(user=request.user, defaults={'points': 0})
 
-        # Check if lab was already solved
+        
         solved_lab, created = SolvedLab.objects.get_or_create(user=request.user, lab=lab)
 
         if created:
-            # Only award points and check for badge if it's solved for the first time
+           
             profile.points += lab.points
             profile.save()
 
             # Count how many labs in this category the user has solved
             labs_solved_in_category = SolvedLab.objects.filter(user=request.user, lab__category=lab.category).count()
 
-            # Award badge if 2 labs solved in same category
+           
             badge_created = False
             badge_name = f"{lab.category.name}"
 

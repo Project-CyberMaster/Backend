@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.inetworking.k8s.ioo/v1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   creationTimestamp: null
@@ -34,7 +34,16 @@ spec:
             name: cybermaster-backend
             port:
               number: 8000
+        path: /swagger
+        pathType: Prefix
+      - backend:
+          service:
+            name: cybermaster-backend
+            port:
+              number: 8000      
         path: /media
         pathType: Prefix
+
+
 status:
   loadBalancer: {}
