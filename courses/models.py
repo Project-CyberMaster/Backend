@@ -31,6 +31,7 @@ class Lesson(models.Model):
     title=models.CharField(max_length=255)
     description=models.TextField()
     chapter=models.ForeignKey(Chapter,related_name="lessons",on_delete=models.CASCADE)
+    url=models.CharField(max_length=255,null=True)
     content=models.FileField(upload_to='lesson_content/', blank=True, null=True)
     order_index=models.IntegerField()
 

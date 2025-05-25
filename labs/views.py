@@ -10,16 +10,16 @@ from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .utils.percentage import calculate_solve_percentages
-from kubernetes import client,config
-from kubernetes.client.rest import ApiException
+#from kubernetes import client,config
+#from kubernetes.client.rest import ApiException
 import hashlib
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-config.load_incluster_config()
-v1=client.CoreV1Api()
-batch_v1=client.BatchV1Api()
-net_v1=client.NetworkingV1Api(client.ApiClient())
+#config.load_incluster_config()
+#v1=client.CoreV1Api()
+#batch_v1=client.BatchV1Api()
+#net_v1=client.NetworkingV1Api(client.ApiClient())
 
 #lab views
 class LabList(APIView):
@@ -218,141 +218,142 @@ class Search(APIView):
         results = Lab.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(author__icontains=query) | Q(category__name__icontains=query)).values("id","title","description","points","author","category__name")
 
         return Response(results)
-    
-class CreateMachine(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @staticmethod
-    def check_pod(pod_name,pod_namespace):
-        try:
-            v1.read_namespaced_pod(name=pod_name,namespace=pod_namespace)
-            return True
-        except ApiException as e:
-            if e.status == 404:
-                return False
-            raise
-    @swagger_auto_schema(
-        operation_summary="Create a machine instance for a lab",
-        operation_description="Creates a machine instance (Kubernetes pod) for the user to work on a machine-type lab.",
-        responses={
-            200: 'Machine already running',
-            201: 'Machine created successfully',
-            400: 'Lab is not a machine',
-            404: 'Lab not found'
-        }
-    )
-
-    def post(self,request,pk):
-        machine=get_object_or_404(Lab,pk=pk)
-        if not machine.is_machine:
-            return Response({'detail':'lab is not a machine'},status=status.HTTP_400_BAD_REQUEST)
-        
-        pod_name=f"machine-{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
-        if self.check_pod(pod_name,'lab-pods'):
-            return Response({
-                'pod_name':pod_name,
-                'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
-                'status':'running'
-            })
-        
-        container=client.V1Container(
-            name=pod_name,
-            image=machine.image,
-            ports=[client.V1ContainerPort(container_port=8443)]
-        )
-
-        job=client.V1Job(
-            api_version="batch/v1",
-            kind="Job",
-            metadata=client.V1ObjectMeta(
-                name=pod_name,
-            ),
-            spec=client.V1JobSpec(
-                ttl_seconds_after_finished=1,
-                active_deadline_seconds=600,
-                template=client.V1PodTemplateSpec(
-                    metadata=client.V1ObjectMeta(
-                        name=pod_name,
-                        labels={'app':pod_name,'lab':str(machine.id),'user':request.user.username}
-                    ),
-                    spec=client.V1PodSpec(
-                        containers=[container],
-                        restart_policy="Never"
-                    )
-                )
-            )
-        )
-        created_job=batch_v1.create_namespaced_job(namespace="lab-pods",body=job)
-
-        owner_refrences=[
-            client.V1OwnerReference(
-                api_version="batch/v1",
-                kind="Job",
-                name=pod_name,
-                uid=created_job.metadata.uid,
-                controller=True,
-                block_owner_deletion=True
-            )
-        ]
-
-        service=client.V1Service(
-            api_version="v1",
-            kind="Service",
-            metadata=client.V1ObjectMeta(
-                name=pod_name+'-service',
-                owner_references=owner_refrences
-            ),
-            spec=client.V1ServiceSpec(
-                selector={'app':pod_name},
-                ports=[
-                    client.V1ServicePort(
-                        port=machine.port,
-                        target_port=machine.port
-                    )
-                ],
-            )
-        )
-
-        ingress=client.V1Ingress(
-            api_version="networking.k8s.io/v1",
-            kind="Ingress",
-            metadata=client.V1ObjectMeta(
-                name=pod_name+'-ingress',
-                owner_references=owner_refrences,
-                annotations={
-                    "traefik.ingress.kubernetes.io/router.middlewares": "lab-pods-stripprefix@kubernetescrd"
-                }
-            ),
-            spec=client.V1IngressSpec(
-                rules=[
-                    client.V1IngressRule(
-                        host="cybermaster.tech",
-                        http=client.V1HTTPIngressRuleValue(
-                            paths=[
-                                client.V1HTTPIngressPath(
-                                    path=f"/{request.user.username}/{machine.id}",
-                                    path_type="Prefix",
-                                    backend=client.V1IngressBackend(
-                                        service=client.V1IngressServiceBackend(
-                                            name=pod_name+'-service',
-                                            port=client.V1ServiceBackendPort(
-                                                number=machine.port
-                                            )
-                                        )
-                                    )
-                                )
-                            ]
-                        )
-                    )
-                ]
-            )
-        )
-
-        v1.create_namespaced_service(namespace="lab-pods",body=service)
-        net_v1.create_namespaced_ingress(namespace="lab-pods",body=ingress)
-        
-        return Response({
-            'pod_name':pod_name,
-            'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
-            'status':'created'
-        },status=status.HTTP_201_CREATED)
+   
+#class CreateMachine(APIView):
+#    permission_classes = [IsAuthenticated]
+#
+#    @staticmethod
+#    def check_pod(pod_name,pod_namespace):
+#        try:
+#            v1.read_namespaced_pod(name=pod_name,namespace=pod_namespace)
+#            return True
+#        except ApiException as e:
+#            if e.status == 404:
+#                return False
+#            raise
+#    @swagger_auto_schema(
+#        operation_summary="Create a machine instance for a lab",
+#        operation_description="Creates a machine instance (Kubernetes pod) for the user to work on a machine-type lab.",
+#        responses={
+#            200: 'Machine already running',
+#            201: 'Machine created successfully',
+#            400: 'Lab is not a machine',
+#            404: 'Lab not found'
+#        }
+#    )
+#
+#    def post(self,request,pk):
+#        machine=get_object_or_404(Lab,pk=pk)
+#        if not machine.is_machine:
+#            return Response({'detail':'lab is not a machine'},status=status.HTTP_400_BAD_REQUEST)
+#        
+#        pod_name=f"machine-{machine.id}-{hashlib.md5(request.user.username.encode()).hexdigest()}"
+#        if self.check_pod(pod_name,'lab-pods'):
+#            return Response({
+#                'pod_name':pod_name,
+#                'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
+#                'status':'running'
+#            })
+#        
+#        container=client.V1Container(
+#            name=pod_name,
+#            image=machine.image,
+#            ports=[client.V1ContainerPort(container_port=8443)]
+#        )
+#
+#        job=client.V1Job(
+#            api_version="batch/v1",
+#            kind="Job",
+#            metadata=client.V1ObjectMeta(
+#                name=pod_name,
+#            ),
+#            spec=client.V1JobSpec(
+#                ttl_seconds_after_finished=1,
+#                active_deadline_seconds=600,
+#                template=client.V1PodTemplateSpec(
+#                    metadata=client.V1ObjectMeta(
+#                        name=pod_name,
+#                        labels={'app':pod_name,'lab':str(machine.id),'user':request.user.username}
+#                    ),
+#                    spec=client.V1PodSpec(
+#                        containers=[container],
+#                        restart_policy="Never"
+#                    )
+#                )
+#            )
+#        )
+#        created_job=batch_v1.create_namespaced_job(namespace="lab-pods",body=job)
+#
+#        owner_refrences=[
+#            client.V1OwnerReference(
+#                api_version="batch/v1",
+#                kind="Job",
+#                name=pod_name,
+#                uid=created_job.metadata.uid,
+#                controller=True,
+#                block_owner_deletion=True
+#            )
+#        ]
+#
+#        service=client.V1Service(
+#            api_version="v1",
+#            kind="Service",
+#            metadata=client.V1ObjectMeta(
+#                name=pod_name+'-service',
+#                owner_references=owner_refrences
+#            ),
+#            spec=client.V1ServiceSpec(
+#                selector={'app':pod_name},
+#                ports=[
+#                    client.V1ServicePort(
+#                        port=machine.port,
+#                        target_port=machine.port
+#                    )
+#                ],
+#            )
+#        )
+#
+#        ingress=client.V1Ingress(
+#            api_version="networking.k8s.io/v1",
+#            kind="Ingress",
+#            metadata=client.V1ObjectMeta(
+#                name=pod_name+'-ingress',
+#                owner_references=owner_refrences,
+#                annotations={
+#                    "traefik.ingress.kubernetes.io/router.middlewares": "lab-pods-stripprefix@kubernetescrd"
+#                }
+#            ),
+#            spec=client.V1IngressSpec(
+#                rules=[
+#                    client.V1IngressRule(
+#                        host="cybermaster.tech",
+#                        http=client.V1HTTPIngressRuleValue(
+#                            paths=[
+#                                client.V1HTTPIngressPath(
+#                                    path=f"/{request.user.username}/{machine.id}",
+#                                    path_type="Prefix",
+#                                    backend=client.V1IngressBackend(
+#                                        service=client.V1IngressServiceBackend(
+#                                            name=pod_name+'-service',
+#                                            port=client.V1ServiceBackendPort(
+#                                                number=machine.port
+#                                            )
+#                                        )
+#                                    )
+#                                )
+#                            ]
+#                        )
+#                    )
+#                ]
+#            )
+#        )
+#
+#        v1.create_namespaced_service(namespace="lab-pods",body=service)
+#        net_v1.create_namespaced_ingress(namespace="lab-pods",body=ingress)
+#        
+#        return Response({
+#            'pod_name':pod_name,
+#            'link':request.build_absolute_uri(f"/{request.user.username}/{machine.id}/"),
+#            'status':'created'
+#        },status=status.HTTP_201_CREATED)
+#

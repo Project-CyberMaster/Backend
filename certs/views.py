@@ -88,7 +88,6 @@ class GetCert(APIView):
                     'ceo_name':"Alia Chouaib",
                     'qrcode':data_uri
                 })
-
                 html_buffer=BytesIO()
                 render_pdf(html_content, html_buffer)
                 cert.file.save(f'{cert.user.username}_{cert.cert_id}.pdf',ContentFile(html_buffer.getvalue()),save=True)
@@ -138,3 +137,38 @@ class Validate(APIView):
             "course":cert.course.title,
             "date":cert.date
         })
+
+class CertificationList(APIView):
+    @swagger_auto_schema(
+        operation_description="Get a list of all available certifications",
+        responses={
+            200: openapi.Response(
+                description="List of all certifications",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'cert_id': openapi.Schema(type=openapi.TYPE_STRING),
+                            'username': openapi.Schema(type=openapi.TYPE_STRING),
+                            'course': openapi.Schema(type=openapi.TYPE_STRING),
+                            'date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATE)
+                        }
+                    )
+                )
+            )
+        }
+    )
+    def get(self, request):
+        certifications = Certification.objects.all()
+        cert_list = []
+        
+        for cert in certifications:
+            cert_list.append({
+                'cert_id': cert.cert_id,
+                'username': cert.user.username,
+                'course': cert.course.title,
+                'date': cert.date
+            })
+            
+        return Response(cert_list)

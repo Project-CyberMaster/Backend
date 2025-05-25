@@ -7,7 +7,7 @@ urlpatterns = [
     path('search', Search.as_view(), name='lab-search'),
    
     path('<int:lab_id>/files', LabResourceFileList.as_view(), name='lab-file-list-create'),
-    path('<int:pk>/start', CreateMachine.as_view(), name='spin'),
+    #path('<int:pk>/start', CreateMachine.as_view(), name='spin'),
     path('files/<int:pk>/', LabResourceFileDetail.as_view(), name='lab-file-detail'),
     path('progress/', SolveProgress.as_view(), name='solve-progress'),
     path('submit_flag/<int:lab_id>/', SubmitFlag.as_view(), name='submit-flag'),
